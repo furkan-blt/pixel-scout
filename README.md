@@ -1,6 +1,6 @@
 # Pixel Scout
 
-[Canlı oyun](https://pixel-scout-nine.vercel.app/) · [Katkı rehberi](CONTRIBUTING.md) · [Mini oyun ekleme](docs/ADDING_GAMES.md) · [Ajan yönergeleri](AGENTS.md)
+[⚽ Canlı Oyun: Golcüyü Tahmin Et](https://yasirertan.github.io/pixel-scout/games/golcuyu-tahmin-et/) · [🎮 Tüm Oyunlar](https://yasirertan.github.io/pixel-scout/games/) · [Katkı rehberi](CONTRIBUTING.md) · [Mini oyun ekleme](docs/ADDING_GAMES.md) · [Ajan yönergeleri](AGENTS.md)
 
 Codex, Antigravity veya herhangi bir editörle geliştirebilirsin. Node.js 22+ yeterli; yerel kullanım için hesap, API anahtarı, e-posta veya bağımlılık kurulumu gerekmiyor. `npm run dev` ile başlat, `/games/` adresinde oyun listesini aç. Yeni oyun: `npm run game:new -- oyun-adi "Oyun Adı"`. Kontroller: `npm run check`.
 

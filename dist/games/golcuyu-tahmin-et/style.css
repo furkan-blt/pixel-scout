@@ -1,0 +1,804 @@
+@font-face {
+  font-family: Silkscreen;
+  src: url('../../assets/silkscreen.ttf') format('truetype');
+  font-display: swap;
+  font-weight: 400;
+}
+
+:root {
+  color-scheme: dark;
+  --paper: #111b16;
+  --cream: #25362b;
+  --ink: #f0ecd9;
+  --muted: #a4b29f;
+  --green: #add486;
+  --lime: #c5e782;
+  --yellow: #efc86b;
+  --orange: #f59e0b;
+  --line: #3c5041;
+  --edge: #688367;
+  --deep-green: #213c2c;
+  --pixel: Silkscreen, 'Courier New', monospace;
+  --body: Arial, Helvetica, sans-serif;
+  --red: #f1796d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 14px;
+  background-image: radial-gradient(#c5e78207 0.65px, transparent 0.65px);
+  background-size: 5px 5px;
+  accent-color: var(--lime);
+}
+
+button, input, select {
+  font: inherit;
+  color: inherit;
+}
+
+button, select {
+  cursor: pointer;
+}
+
+button:focus-visible, a:focus-visible, select:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+
+input:focus-visible {
+  outline: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Site Başlığı */
+.site-header {
+  height: 80px;
+  max-width: 1180px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  gap: 20px;
+  padding: 0 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 18px/1.1 var(--pixel);
+  letter-spacing: -1px;
+}
+
+.brand-dot {
+  color: var(--yellow);
+}
+
+.header-tag {
+  font: 9px var(--pixel);
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  border-left: 1px solid var(--line);
+  padding: 8px 0 8px 18px;
+}
+
+nav {
+  display: flex;
+  margin-left: auto;
+  gap: 12px;
+}
+
+.nav-link {
+  font: 10px var(--pixel);
+  color: var(--muted);
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: #192a1f;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  background: var(--deep-green);
+  color: var(--lime);
+  border-color: var(--edge);
+}
+
+.nav-link.highlight {
+  color: #122115;
+  background: var(--yellow);
+  border-color: var(--yellow);
+  font-weight: bold;
+}
+
+.nav-link.highlight:hover {
+  background: #fedb72;
+}
+
+main {
+  max-width: 1180px;
+  margin: auto;
+  padding: 20px 16px 60px;
+}
+
+/* Üst Maç Bilgi Çubuğu */
+.match-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: #16261b;
+  border: 1px solid var(--line);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font: 10px var(--pixel);
+}
+
+.match-badge {
+  color: var(--yellow);
+}
+
+.match-info {
+  color: var(--muted);
+}
+
+.goals-status-badge {
+  color: var(--lime);
+  background: #1f3524;
+  padding: 4px 10px;
+  border: 1px solid var(--edge);
+}
+
+/* Yeni Nesil İki Kolonlu Skorbord Kartı */
+.scoreboard-card {
+  background: #17271c;
+  border: 2px solid var(--edge);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 5px 5px 0 #06100a;
+}
+
+.match-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.team-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.team-column.home-column {
+  text-align: left;
+}
+
+.team-column.away-column {
+  text-align: right;
+}
+
+.team-header {
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.team-name {
+  font: 17px var(--pixel);
+  letter-spacing: -0.5px;
+  color: #f7f4e8;
+  display: block;
+}
+
+/* Alt Alta Sıralanan Goller */
+.team-goals-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 50px;
+}
+
+.goal-pill {
+  background: #203324;
+  border: 2px solid var(--edge);
+  color: var(--ink);
+  padding: 9px 12px;
+  font: 10px var(--pixel);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.home-column .goal-pill {
+  justify-content: flex-start;
+}
+
+.away-column .goal-pill {
+  justify-content: flex-end;
+}
+
+.goal-pill:hover {
+  background: #2b4531;
+  border-color: var(--lime);
+}
+
+.goal-pill.selected {
+  background: #395b3d;
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 2px var(--yellow);
+  transform: scale(1.02);
+}
+
+.goal-pill.solved {
+  background: #1d4325;
+  border-color: var(--green);
+  color: #d8f5b4;
+}
+
+.goal-pill.passed {
+  background: #3d2b24;
+  border-color: var(--orange);
+  color: #ffe0b3;
+}
+
+/* Orta Skor Kutusu */
+.center-score-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  background: #121f16;
+  border: 2px solid var(--edge);
+  box-shadow: 3px 3px 0 #060e09;
+  min-width: 150px;
+}
+
+.score-display {
+  font: 36px var(--pixel);
+  letter-spacing: 2px;
+  color: var(--lime);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.score-subtext {
+  font: 8px var(--pixel);
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.skip-match-btn {
+  background: #223727;
+  border: 1px solid var(--edge);
+  color: var(--muted);
+  font: 9px var(--pixel);
+  padding: 6px 10px;
+  transition: all 0.15s;
+}
+
+.skip-match-btn:hover {
+  background: var(--deep-green);
+  color: var(--lime);
+  border-color: var(--lime);
+}
+
+/* Tahmin Alanı Grid */
+.guess-area {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* Sol Panel: Portre Kartı */
+.portrait-card {
+  border: 2px solid var(--edge);
+  box-shadow: 4px 4px 0 #07110b;
+  background: #243829;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #2f4834;
+  border-bottom: 1px solid #4a684f;
+  font: 9px var(--pixel);
+  letter-spacing: 0.3px;
+  color: #c9dbb9;
+}
+
+.portrait-stage {
+  height: 280px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #182a1d;
+  overflow: hidden;
+}
+
+.portrait-frame {
+  height: 240px;
+  width: 220px;
+  overflow: hidden;
+  position: relative;
+  border: 3px solid #3c5440;
+  background: #1f3323;
+  box-shadow: 3px 3px 0 #050b0870;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.6s ease, transform 0.4s ease;
+}
+
+/* İpucu Seviyelerine Göre Filtre */
+.portrait-img.level-0 {
+  filter: blur(28px) grayscale(100%) brightness(30%);
+}
+
+.portrait-img.level-1 {
+  filter: blur(18px) grayscale(80%) brightness(50%);
+}
+
+.portrait-img.level-2 {
+  filter: blur(10px) grayscale(40%) brightness(70%);
+}
+
+.portrait-img.level-3, .portrait-img.unlocked {
+  filter: blur(0px) grayscale(0%) brightness(100%);
+}
+
+.card-footer {
+  padding: 12px 14px;
+  background: #1c2e20;
+  border-top: 1px solid #38513b;
+  text-align: center;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  font: 9px var(--pixel);
+  background: #2c4230;
+  border: 1px solid var(--edge);
+  color: var(--yellow);
+}
+
+.status-badge.solved {
+  background: #21532c;
+  border-color: var(--lime);
+  color: var(--lime);
+}
+
+.status-badge.passed {
+  background: #4a3018;
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.status-badge.lost {
+  background: #502722;
+  border-color: var(--red);
+  color: #ffc4be;
+}
+
+/* Sağ Panel: Tahmin Kutusu ve İpuçları */
+.interactive-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* İpucu Kartları */
+.clues-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.clue-card {
+  background: #1b2c20;
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.clue-card.unlocked {
+  background: #263e2c;
+  border-color: var(--green);
+}
+
+.clue-card .clue-tag {
+  font: 8px var(--pixel);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.clue-card .clue-value {
+  font: 11px var(--pixel);
+  color: var(--ink);
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clue-card.locked .clue-value {
+  color: #657e62;
+  font-size: 10px;
+}
+
+/* Arama Kutusu ve Pas Butonu */
+.search-container {
+  position: relative;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--edge);
+  background: #152219;
+  height: 52px;
+  box-shadow: 3px 3px 0 #06100a;
+}
+
+.search-box:focus-within {
+  border-color: var(--lime);
+  box-shadow: 3px 3px 0 #c5e782;
+}
+
+.search-box input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--ink);
+  height: 100%;
+}
+
+.search-box input::placeholder {
+  color: #6a7f66;
+}
+
+.search-box button {
+  background: var(--lime);
+  color: #112115;
+  border: 0;
+  padding: 0 16px;
+  height: 100%;
+  font: 10px var(--pixel);
+  font-weight: bold;
+  transition: background 0.15s;
+}
+
+.search-box button:hover {
+  background: #d9f3a2;
+}
+
+.search-box .pass-btn {
+  background: #3d281a;
+  color: var(--orange);
+  border-left: 1px solid #5a3c26;
+  padding: 0 14px;
+}
+
+.search-box .pass-btn:hover {
+  background: #5a3922;
+  color: #ffd899;
+}
+
+/* Öneri Listesi Dropdown */
+#suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 54px;
+  list-style: none;
+  background: #152219;
+  border: 2px solid var(--edge);
+  margin: 0;
+  padding: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 4px 6px 0 #050b0890;
+}
+
+#suggestions li {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #233626;
+}
+
+#suggestions li:last-child {
+  border-bottom: 0;
+}
+
+#suggestions li:hover, #suggestions li.active {
+  background: #2b4430;
+}
+
+.sugg-name {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.sugg-details {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sugg-pos {
+  font: 8px var(--pixel);
+  border: 1px solid var(--line);
+  padding: 2px 5px;
+  background: #1c2d20;
+}
+
+/* Tahmin Hakları ve Mesaj */
+.round-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font: 10px var(--pixel);
+  color: var(--muted);
+}
+
+.attempts-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background: #2b3d2f;
+  border: 1px solid var(--edge);
+}
+
+.dot.used {
+  background: var(--red);
+  border-color: #a84239;
+}
+
+.dot.won {
+  background: var(--lime);
+  border-color: var(--green);
+}
+
+.dot.passed {
+  background: var(--orange);
+  border-color: #b46b14;
+}
+
+/* Tahmin Geçmişi */
+.guesses-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guess-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  background: #1b2d20;
+  border-left: 4px solid var(--red);
+  font-size: 12px;
+}
+
+.guess-row.correct {
+  border-left-color: var(--lime);
+  background: #223f29;
+}
+
+.guess-row.passed {
+  border-left-color: var(--orange);
+  background: #38281a;
+}
+
+.guess-row .guess-num {
+  font: 9px var(--pixel);
+  color: var(--muted);
+}
+
+.guess-row .guess-name {
+  font-weight: bold;
+}
+
+.guess-row .guess-msg {
+  margin-left: auto;
+  font-size: 11px;
+  color: #c9dbc0;
+}
+
+/* Tebrikler / Bilgi Kartı */
+.success-banner {
+  background: #204128;
+  border: 2px solid var(--lime);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: popIn 0.3s ease;
+}
+
+.success-banner h3 {
+  font: 15px var(--pixel);
+  color: var(--lime);
+  margin: 0;
+}
+
+.success-banner p {
+  margin: 0;
+  line-height: 1.5;
+  color: #e5f1d8;
+  font-size: 13px;
+}
+
+/* Maç Tamamlandı Kartı */
+.match-completed-card {
+  background: #1a3322;
+  border: 2px solid var(--yellow);
+  padding: 24px;
+  text-align: center;
+  margin-top: 24px;
+  box-shadow: 6px 6px 0 #050b0890;
+}
+
+.match-completed-card h2 {
+  font: 20px var(--pixel);
+  color: var(--yellow);
+  margin: 0 0 10px;
+}
+
+.match-completed-card p {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.next-match-btn {
+  background: var(--yellow);
+  color: #182312;
+  border: 0;
+  padding: 12px 24px;
+  font: 11px var(--pixel);
+  font-weight: bold;
+  box-shadow: 3px 3px 0 #07100b;
+}
+
+.next-match-btn:hover {
+  background: #fde089;
+}
+
+/* Modal / İstatistikler */
+dialog {
+  border: 2px solid var(--edge);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 24px;
+  max-width: 500px;
+  width: calc(100% - 32px);
+  box-shadow: 8px 8px 0 #00000080;
+}
+
+dialog::backdrop {
+  background: #030907c9;
+  backdrop-filter: blur(3px);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dialog-header button {
+  background: #283e2b;
+  border: 1px solid var(--edge);
+  padding: 4px 10px;
+  font: 11px var(--pixel);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.stat-box {
+  background: #1d3022;
+  padding: 14px 8px;
+  border-bottom: 3px solid var(--green);
+}
+
+.stat-box strong {
+  display: block;
+  font: 22px var(--pixel);
+  color: var(--lime);
+  margin-bottom: 4px;
+}
+
+.stat-box span {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Mobil Uyumluluk */
+@media (max-width: 850px) {
+  .match-columns-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .team-column.away-column {
+    text-align: left;
+  }
+  .away-column .goal-pill {
+    justify-content: flex-start;
+  }
+  .guess-area {
+    grid-template-columns: 1fr;
+  }
+  .portrait-card {
+    max-width: 320px;
+    margin: auto;
+  }
+  .clues-grid {
+    grid-template-columns: 1fr;
+  }
+  .search-box {
+    flex-wrap: wrap;
+    height: auto;
+  }
+  .search-box input {
+    height: 48px;
+    width: 100%;
+  }
+  .search-box button, .search-box .pass-btn {
+    height: 42px;
+    flex: 1;
+  }
+}
