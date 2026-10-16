@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import {computerTeams,simulateMatch,teamProfile} from '../dist/games/fut-draft/rules.js';
+import {computerTeams,simulateMatch} from '../dist/games/fut-draft/rules.js';
+import {teamProfile} from '../dist/games/fut-draft/simulation.js';
 const catalogue=JSON.parse(fs.readFileSync(new URL('../dist/games/fut-draft/players.json',import.meta.url)));
 const teams=computerTeams(catalogue),strong=teams.find(t=>t.name==='Paris SG'),underdog=teams.find(t=>t.name==='Man Utd');
 const runs=20000;

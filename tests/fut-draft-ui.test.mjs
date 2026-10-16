@@ -12,7 +12,7 @@ async function environment(saved=null,brokenStorage=false){
   let now=0,timerId=0;const timers=new Map();
   globalThis.setTimeout=(fn,ms)=>{timers.set(++timerId,{fn,at:now+ms});return timerId;};globalThis.clearTimeout=id=>timers.delete(id);
   function node(selector){if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',hidden:false,textContent:'',style:{},offsetHeight:800,dataset:{},attributes:{},classes:new Set(),classList:{toggle(name,enabled){const classes=node(selector).classes;if(enabled)classes.add(name);else classes.delete(name);}},setAttribute(k,v){this.attributes[k]=v;},focus(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(){},elements:{}});return nodes.get(selector);}
-  node('#setup-form').elements=Object.fromEntries([...Array.from({length:5},(_,i)=>[`team-${i}`,{value:`UI ${i+1}`}]),...[20,30,30,15,5].map((n,i)=>[`odds-${i}`,{value:String(n)}])]);
+  node('#setup-form').elements=Object.fromEntries([...Array.from({length:5},(_,i)=>[`team-${i}`,{value:`UI ${i+1}`}]),...[20,40,25,10,5].map((n,i)=>[`odds-${i}`,{value:String(n)}])]);
   globalThis.document={querySelector:node,querySelectorAll:()=>[0,1,2].map(i=>{const n=node(`card-${i}`);n.dataset.revealIndex=String(i);return n;}),addEventListener:(event,fn)=>listeners.set(event,fn)};
   globalThis.window={scrollY:0,scrollTo(options){this.scrollY=options.top;}};
   globalThis.localStorage={getItem:key=>{if(brokenStorage)throw Error('Storage denied');return storage.get(key)||null;},setItem:(key,v)=>{if(brokenStorage)throw Error('Storage denied');storage.set(key,v);},removeItem:key=>storage.delete(key)};
@@ -63,13 +63,16 @@ test('UI event flow reaches cup, hides locked choices and resumes behind handoff
   }
   assert.equal(s.phase,'tournament');assert.match(ui.html(),/1\. HAFTAYI SİMÜLE ET/);
   ui.click('simulate');s=ui.state();assert.equal(s.tournament.week,1);assert.match(ui.html(),/Lig · 1\. hafta/);
+  assert.match(ui.html(),/Maçın akışı ve pozisyonlar/);assert.match(ui.html(),/Tehlikeli fırsat/);
   ui=await environment(s);assert.match(ui.html(),/2\. HAFTAYI SİMÜLE ET/);
   ui.click('',{cupView:'table'});assert.match(ui.html(),/<table>/);assert.match(ui.html(),/UI 1/);
   while(s.tournament.stage!=='done'){ui.click('simulate');s=ui.state();}
   assert.match(ui.html(),/FUT DRAFT KAZANANI/);assert.match(ui.html(),/zafer senin/);
   ui.click('',{cupView:'bracket'});assert.match(ui.html(),/bracket-column/);
   ui.click('',{cupView:'squads'});assert.match(ui.html(),/Kadro dosyası/);
+  assert.match(ui.html(),/chemistry-lines/);assert.match(ui.html(),/MODEL 3/);
   ui.change('cup-squad-select','12');assert.match(ui.html(),/TAKIM GÜCÜ/);
+  assert.match(ui.html(),/Kulüp kimyası · uygulanmaz/);assert.match(ui.html(),/Kulüp bonusu yok/);
   ui.click('restart');assert.ok(ui.node('#reset-dialog').open);ui.click('confirm-reset');assert.match(ui.html(),/Masayı kur/);
 });
 

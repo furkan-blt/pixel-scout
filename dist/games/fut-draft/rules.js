@@ -1,9 +1,9 @@
-import {SIMULATION_VERSION,expectedGoals} from './simulation.js';
-export {teamProfile} from './simulation.js';
+import {SIMULATION_VERSION,expectedGoals,simulateOpportunities,qualificationRisk} from './simulation-v3.js';
+export {teamProfile,profileForTeam} from './simulation-v3.js';
 export const COLORS = [{id:'lime',label:'Yeşil',hex:'#cbf477'},{id:'blue',label:'Mavi',hex:'#78b6ff'},{id:'orange',label:'Turuncu',hex:'#ffb36b'},{id:'purple',label:'Mor',hex:'#c5a1ff'},{id:'pink',label:'Pembe',hex:'#ff94c3'},{id:'red',label:'Kırmızı',hex:'#ff7f79'},{id:'cyan',label:'Turkuaz',hex:'#68d7d1'},{id:'yellow',label:'Sarı',hex:'#f4d76e'}];
 export const POSITIONS = { GK:'Kaleci', DEF:'Defans', MID:'Orta saha', ATT:'Forvet' };
 export const LIMITS = { GK:1, DEF:4, MID:3, ATT:3 };
-export const ODDS = [20,30,30,15,5];
+export const ODDS = [20,40,25,10,5];
 export const STORAGE_KEY = 'pixel-scout:fut-draft:v1';
 const check = (ok,message) => { if (!ok) throw new Error(message); };
 const copy = value => structuredClone(value);
@@ -196,7 +196,8 @@ function poisson(state,lambda) {
   do {k++;p*=random(state);}while(p>stop&&k<20);
   return k-1;
 }
-export function simulateMatch(state,home,away,neutral=false,version=SIMULATION_VERSION) {
+export function simulateMatch(state,home,away,neutral=false,version=SIMULATION_VERSION,context={}) {
+  if(version>=3)return simulateOpportunities(()=>random(state),home,away,neutral,context);
   const expectation=expectedGoals(home,away,neutral,version);
   return {home:home.id,away:away.id,neutral,hg:poisson(state,expectation.lambdaHome),ag:poisson(state,expectation.lambdaAway),...expectation};
 }
@@ -243,7 +244,15 @@ function settleTie(state,t,tie,final) {
   for(const m of tie.matches){a+=m.home===tie.a?m.hg:m.ag;b+=m.home===tie.b?m.hg:m.ag;}
   const last=tie.matches.at(-1);
   if(a===b){
-    const eh=poisson(state,last.lambdaHome/3),ea=poisson(state,last.lambdaAway/3);
+    let eh,ea;
+    if(last.modelVersion>=3){
+      const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
+      const first=tie.matches.length>1?tie.matches[0]:null;
+      const extra=simulateOpportunities(()=>random(state),home,away,final,{initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
+      eh=extra.hg;ea=extra.ag;last.lambdaHome+=extra.lambdaHome;last.lambdaAway+=extra.lambdaAway;
+      last.events.push(...extra.events);
+      for(const side of ['home','away'])for(const key of ['attacks','dangerous','shots','goals'])last.stats[side][key]+=extra.stats[side][key];
+    }else{eh=poisson(state,last.lambdaHome/3);ea=poisson(state,last.lambdaAway/3);}
     last.extra={home:eh,away:ea};last.hg+=eh;last.ag+=ea;
     a+=last.home===tie.a?eh:ea;b+=last.home===tie.b?eh:ea;
   }
@@ -270,7 +279,9 @@ function advanceTournament(state) {
   const t=state.tournament,lookup=new Map(t.teams.map(team=>[team.id,team]));
   if(t.stage==='league'){
     if(t.week===8){setupPlayoffs(state,t);return;}
-    const matches=t.weeks[t.week].map(m=>simulateMatch(state,lookup.get(m.home),lookup.get(m.away),false,t.simulationVersion??1));
+    const table=standings(t);
+    const plans=new Map(table.map(row=>[row.id,qualificationRisk(table,row.id,t.week)]));
+    const matches=t.weeks[t.week].map(m=>simulateMatch(state,lookup.get(m.home),lookup.get(m.away),false,t.simulationVersion??1,{home:plans.get(m.home),away:plans.get(m.away)}));
     t.week++;t.history.push({stage:'league',number:t.week,label:`Lig · ${t.week}. hafta`,matches});return;
   }
   const round=t.bracket.at(-1),final=t.stage==='final';
@@ -283,7 +294,9 @@ function advanceTournament(state) {
   const leg=round.leg+1,matches=[];
   for(const tie of round.ties){
     const [h,a]=final||leg===2?[tie.a,tie.b]:[tie.b,tie.a];
-    const match=simulateMatch(state,lookup.get(h),lookup.get(a),final,t.simulationVersion??1);tie.matches.push(match);
+    const first=leg===2?tie.matches[0]:null;
+    const context={aggregateHome:first?(first.home===h?first.hg:first.ag):0,aggregateAway:first?(first.home===a?first.hg:first.ag):0};
+    const match=simulateMatch(state,lookup.get(h),lookup.get(a),final,t.simulationVersion??1,context);tie.matches.push(match);
     if(final||leg===2)settleTie(state,t,tie,final);
     matches.push(copy(match));
   }
@@ -304,8 +317,10 @@ export function migrateSaved(saved) {
   // Already locked targets keep their original opponents; an untouched round can rotate.
   state.stealOffset??=state.phase==='steal'&&state.cursor===0?state.stealRound+1:1;
   if(state.tournament){
-    state.tournament.simulationVersion??=state.tournament.history.length===0?SIMULATION_VERSION:1;
+    if(state.tournament.history.length===0)state.tournament.simulationVersion=SIMULATION_VERSION;
+    else state.tournament.simulationVersion??=1;
   }
+  if(state.phase==='draft'&&state.odds.join(',')==='20,30,30,15,5')state.odds=[...ODDS];
   state.rulesVersion=2;
   return state;
 }
