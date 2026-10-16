@@ -1,3 +1,6 @@
+import {SIMULATION_VERSION,expectedGoals} from './simulation.js';
+export {teamProfile} from './simulation.js';
+export const COLORS = [{id:'lime',label:'Yeşil',hex:'#cbf477'},{id:'blue',label:'Mavi',hex:'#78b6ff'},{id:'orange',label:'Turuncu',hex:'#ffb36b'},{id:'purple',label:'Mor',hex:'#c5a1ff'},{id:'pink',label:'Pembe',hex:'#ff94c3'},{id:'red',label:'Kırmızı',hex:'#ff7f79'},{id:'cyan',label:'Turkuaz',hex:'#68d7d1'},{id:'yellow',label:'Sarı',hex:'#f4d76e'}];
 export const POSITIONS = { GK:'Kaleci', DEF:'Defans', MID:'Orta saha', ATT:'Forvet' };
 export const LIMITS = { GK:1, DEF:4, MID:3, ATT:3 };
 export const ODDS = [20,30,30,15,5];
@@ -22,17 +25,21 @@ export function activeSeat(state) {
   if(state.phase==='draft') return (state.first+Math.floor(state.picks/state.teams.length)+state.picks%state.teams.length)%state.teams.length;
   return state.order[state.cursor];
 }
-export function createGame(names,odds=ODDS,seed=1) {
+export const stealVictim = (state,seat) => (seat+(state.stealOffset??1))%state.teams.length;
+export const stealAttacker = (state,seat) => (seat-(state.stealOffset??1)+state.teams.length)%state.teams.length;
+export function createGame(names,odds=ODDS,seed=1,colors=COLORS.slice(0,names.length).map(c=>c.id)) {
   check(names.length>=3&&names.length<=5,'3–5 katılımcı gerekli.');
   check(names.every(n=>typeof n==='string'&&n.trim()&&n.trim().length<=24),'Takım adları 1–24 karakter olmalı.');
   check(new Set(names.map(n=>n.trim().toLocaleLowerCase('tr'))).size===names.length,'Takım adları farklı olmalı.');
   check(odds.length===5&&odds.every(n=>Number.isInteger(n)&&n>=0&&n<=100)&&odds.reduce((a,b)=>a+b,0)===100,'Olasılıklar toplamı %100 olmalı.');
-  const state = {version:1,phase:'draft',rng:(seed>>>0)||1,odds:[...odds],picks:0,pack:null,teams:names.map((name,i)=>({id:`human-${i}`,name:name.trim(),roster:[],joker:true})),stealRound:0,stealHistory:[],tournament:null};
+  check(colors.length===names.length&&new Set(colors).size===colors.length&&colors.every(id=>COLORS.some(c=>c.id===id)),'Her katılımcı sekiz renkten farklı bir renk seçmeli.');
+  const state = {version:1,rulesVersion:2,phase:'draft',rng:(seed>>>0)||1,odds:[...odds],picks:0,pack:null,teams:names.map((name,i)=>({id:`human-${i}`,name:name.trim(),color:colors[i],roster:[],joker:true})),stealRound:0,stealHistory:[],tournament:null};
   state.first=Math.floor(random(state)*names.length);
   return state;
 }
 function beginSteal(state) {
   state.phase='steal'; state.cursor=0; state.locks={};
+  state.stealOffset=state.stealRound+1;
   state.order=Array.from({length:state.teams.length},(_,i)=>(state.first+state.stealRound+i)%state.teams.length);
   state.stealSnapshot=state.teams.map(t=>copy(t.roster));
 }
@@ -78,13 +85,13 @@ export function transition(previous,catalogue,action) {
     if(state.picks===state.teams.length*11){assertSquads(state.teams);beginSteal(state);}
   } else if(action.type==='lock') {
     check(state.phase==='steal','Gizli seçim aşaması tamamlandı.');
-    const seat=activeSeat(state),victim=(seat+1)%state.teams.length;
+    const seat=activeSeat(state),victim=stealVictim(state,seat);
     check(state.stealSnapshot[seat].some(p=>p.id===action.protect),'Koruyacağın futbolcuyu seç.');
     check(state.stealSnapshot[victim].some(p=>p.id===action.target),'Çalacağın futbolcuyu seç.');
     state.locks[seat]={protect:action.protect,target:action.target};
     state.cursor++;
     if(state.cursor===state.teams.length){
-      state.results=state.order.map(thief=>{const victim=(thief+1)%state.teams.length;return {thief,victim,target:state.locks[thief].target,protected:state.locks[victim].protect,success:state.locks[thief].target!==state.locks[victim].protect};});
+      state.results=state.order.map(thief=>{const victim=stealVictim(state,thief);return {thief,victim,target:state.locks[thief].target,protected:state.locks[victim].protect,success:state.locks[thief].target!==state.locks[victim].protect};});
       state.phase='steal-reveal';
     }
   } else if(action.type==='exchange-start') {
@@ -108,6 +115,11 @@ export function transition(previous,catalogue,action) {
     check(state.phase==='steal-summary','Çalma turu tamamlanmalı.');
     if(state.stealRound===0){state.stealRound=1;beginSteal(state);}
     else{state.phase='tournament';state.tournament=createTournament(state,catalogue);delete state.locks;delete state.stealSnapshot;}
+  } else if(action.type==='color') {
+    const team=state.teams.find(t=>t.id===action.team);
+    check(team&&COLORS.some(c=>c.id===action.color)&&!state.teams.some(t=>t.id!==team.id&&t.color===action.color),'Başka katılımcının kullanmadığı bir renk seç.');
+    team.color=action.color;
+    if(state.tournament)state.tournament.teams.find(t=>t.id===team.id).color=action.color;
   } else if(action.type==='simulate') {
     check(state.phase==='tournament'&&state.tournament.stage!=='done','Simüle edilecek maç kalmadı.');
     advanceTournament(state);
@@ -177,20 +189,16 @@ export function createTournament(state,catalogue) {
   check(bots.length===36-humans.length,'36 takımlık turnuva için yeterli kulüp yok.');
   const teams=[...humans,...bots];
   const {weeks,pots}=leagueSchedule(state,teams);
-  return {teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
+  return {simulationVersion:SIMULATION_VERSION,teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
 }
 function poisson(state,lambda) {
   const stop=Math.exp(-lambda);let p=1,k=0;
   do {k++;p*=random(state);}while(p>stop&&k<20);
   return k-1;
 }
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-export function simulateMatch(state,home,away,neutral=false) {
-  const attack=t=>t.strength.ATT*.7+t.strength.MID*.3;
-  const defense=t=>t.strength.DEF*.65+t.strength.GK*.35;
-  const lambdaHome=clamp(1.25*Math.exp((attack(home)-defense(away))*.055)*(neutral?1:1.14),.18,4.6);
-  const lambdaAway=clamp(1.25*Math.exp((attack(away)-defense(home))*.055),.18,4.6);
-  return {home:home.id,away:away.id,hg:poisson(state,lambdaHome),ag:poisson(state,lambdaAway),lambdaHome,lambdaAway};
+export function simulateMatch(state,home,away,neutral=false,version=SIMULATION_VERSION) {
+  const expectation=expectedGoals(home,away,neutral,version);
+  return {home:home.id,away:away.id,neutral,hg:poisson(state,expectation.lambdaHome),ag:poisson(state,expectation.lambdaAway),...expectation};
 }
 export function standings(tournament) {
   const rows=new Map(tournament.teams.map(t=>[t.id,{id:t.id,name:t.name,human:t.human,p:0,w:0,d:0,l:0,gf:0,ga:0,ag:0,aw:0,pts:0,opponents:[]}]));
@@ -262,7 +270,7 @@ function advanceTournament(state) {
   const t=state.tournament,lookup=new Map(t.teams.map(team=>[team.id,team]));
   if(t.stage==='league'){
     if(t.week===8){setupPlayoffs(state,t);return;}
-    const matches=t.weeks[t.week].map(m=>simulateMatch(state,lookup.get(m.home),lookup.get(m.away)));
+    const matches=t.weeks[t.week].map(m=>simulateMatch(state,lookup.get(m.home),lookup.get(m.away),false,t.simulationVersion??1));
     t.week++;t.history.push({stage:'league',number:t.week,label:`Lig · ${t.week}. hafta`,matches});return;
   }
   const round=t.bracket.at(-1),final=t.stage==='final';
@@ -275,7 +283,7 @@ function advanceTournament(state) {
   const leg=round.leg+1,matches=[];
   for(const tie of round.ties){
     const [h,a]=final||leg===2?[tie.a,tie.b]:[tie.b,tie.a];
-    const match=simulateMatch(state,lookup.get(h),lookup.get(a),final);tie.matches.push(match);
+    const match=simulateMatch(state,lookup.get(h),lookup.get(a),final,t.simulationVersion??1);tie.matches.push(match);
     if(final||leg===2)settleTie(state,t,tie,final);
     matches.push(copy(match));
   }
@@ -290,10 +298,24 @@ function advanceTournament(state) {
   }
 }
 
+export function migrateSaved(saved) {
+  const state=copy(saved);
+  state.teams.forEach((team,i)=>{team.color??=COLORS[i].id;if(state.tournament){const t=state.tournament.teams.find(t=>t.id===team.id);if(t)t.color=team.color;}});
+  // Already locked targets keep their original opponents; an untouched round can rotate.
+  state.stealOffset??=state.phase==='steal'&&state.cursor===0?state.stealRound+1:1;
+  if(state.tournament){
+    state.tournament.simulationVersion??=state.tournament.history.length===0?SIMULATION_VERSION:1;
+  }
+  state.rulesVersion=2;
+  return state;
+}
 export function validateSaved(state,catalogue) {
   try{
     check(state.version===1&&['draft','steal','steal-reveal','exchange','steal-summary','tournament'].includes(state.phase),'Kayıt sürümü geçersiz.');
     check(state.teams.length>=3&&state.teams.length<=5&&Number.isInteger(state.rng)&&state.rng>0,'Kayıt eksik.');
+    const colors=state.teams.map(t=>t.color).filter(c=>c!==undefined);
+    check((colors.length===0||colors.length===state.teams.length)&&new Set(colors).size===colors.length&&colors.every(id=>COLORS.some(c=>c.id===id)),'Takım renkleri geçersiz.');
+    check(state.stealOffset===undefined||state.stealOffset===1||state.stealOffset===2,'Çalma rakibi geçersiz.');
     const players=new Map(catalogue.players.map(p=>[p.id,p]));
     const ids=new Set();
     for(const t of state.teams){
