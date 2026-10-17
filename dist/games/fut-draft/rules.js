@@ -1,8 +1,10 @@
-import {SIMULATION_VERSION,expectedGoals,simulateOpportunities,qualificationRisk,profileForTeam,penaltyProbability} from './simulation-v4.js';
+import {SIMULATION_VERSION,simulateOpportunities,qualificationRisk,profileForTeam,penaltyProbability} from './simulation-v5.js';
+import {simulateOpportunities as simulateV4,expectedGoals as expectedV4} from './simulation-v4.js';
+import {UPGRADE_LEVELS,pendingUpgrades,upgradeOptions,upgradePool} from './upgrades.js';
 import {simulateOpportunities as simulateV3} from './simulation-v3.js';
 import {SEASON,SEASON_TEAMS} from './season-data.js';
 import {TEMPOS,STYLES,DEFAULT_PLAN,planKey,matchPlanWindow,pendingMatchPlans,computerPlan} from './match-plans.js';
-export {teamProfile,profileForTeam} from './simulation-v4.js';
+export {teamProfile,profileForTeam} from './simulation-v5.js';
 export const COLORS = [{id:'lime',label:'Yeşil',hex:'#cbf477'},{id:'blue',label:'Mavi',hex:'#78b6ff'},{id:'orange',label:'Turuncu',hex:'#ffb36b'},{id:'purple',label:'Mor',hex:'#c5a1ff'},{id:'pink',label:'Pembe',hex:'#ff94c3'},{id:'red',label:'Kırmızı',hex:'#ff7f79'},{id:'cyan',label:'Turkuaz',hex:'#68d7d1'},{id:'yellow',label:'Sarı',hex:'#f4d76e'}];
 export const POSITIONS = { GK:'Kaleci', DEF:'Defans', MID:'Orta saha', ATT:'Forvet' };
 export const LIMITS = { GK:1, DEF:4, MID:3, ATT:3 };
@@ -123,8 +125,31 @@ export function transition(previous,catalogue,action) {
     check(team&&COLORS.some(c=>c.id===action.color)&&!state.teams.some(t=>t.id!==team.id&&t.color===action.color),'Başka katılımcının kullanmadığı bir renk seç.');
     team.color=action.color;
     if(state.tournament)state.tournament.teams.find(t=>t.id===team.id).color=action.color;
+  } else if(action.type==='upgrade-open') {
+    const t=state.tournament;
+    check(state.phase==='tournament'&&t&&pendingUpgrades(t)[0]?.id===action.team,'Bu takım yükseltme yapamaz.');
+    check(!t.upgrades?.[t.stage]?.[action.team]?.pack,'Yükseltme kutusu zaten açık.');
+    check(upgradeOptions(state,catalogue,action.team).some(p=>p.id===action.player),'Bu futbolcu için iki seviyede de daha yüksek üç kart bulunmuyor.');
+    const levels=UPGRADE_LEVELS[t.stage],level=levels[Math.floor(random(state)*2)];
+    const options=shuffle(state,upgradePool(state,catalogue,action.team,action.player,level)).slice(0,3);
+    t.upgrades??={};t.upgrades[t.stage]??={};t.upgrades[t.stage][action.team]={pack:{old:action.player,level,options},done:false};
+  } else if(action.type==='upgrade-pick') {
+    const t=state.tournament,entry=t?.upgrades?.[t.stage]?.[action.team];
+    check(state.phase==='tournament'&&pendingUpgrades(t)[0]?.id===action.team&&entry?.pack,'Yükseltme kutusu açık değil.');
+    const picked=entry.pack.options.find(p=>p.id===action.id);
+    check(picked&&!state.teams.some(team=>team.roster.some(p=>p.id===picked.id)),'Geçersiz veya başka katılımcı tarafından seçilmiş kart.');
+    const team=state.teams.find(team=>team.id===action.team),old=team.roster.find(p=>p.id===entry.pack.old);
+    check(old&&picked.position===old.position&&picked.overall>old.overall,'Yükseltme aynı mevkide ve daha yüksek overall olmalı.');
+    team.roster[team.roster.findIndex(p=>p.id===old.id)]=copy(picked);
+    const cupTeam=t.teams.find(x=>x.id===team.id);cupTeam.roster=copy(team.roster);cupTeam.strength=teamStrength(team.roster);cupTeam.overall=mean(team.roster.map(p=>p.overall));
+    t.upgrades[t.stage][action.team]={done:true,old:old.id,player:picked.id,level:entry.pack.level};
+  } else if(action.type==='upgrade-skip') {
+    const t=state.tournament;
+    check(state.phase==='tournament'&&t&&pendingUpgrades(t)[0]?.id===action.team,'Atlanacak yükseltme yok.');
+    t.upgrades??={};t.upgrades[t.stage]??={};t.upgrades[t.stage][action.team]={done:true,skipped:true};
   } else if(action.type==='match-plan') {
     const t=state.tournament;
+    check(!pendingUpgrades(t).length,'Önce yükseltme seçimlerini tamamlayın.');
     check(state.phase==='tournament'&&t&&pendingMatchPlans(t).some(team=>team.id===action.team),'Bu takım şu anda maç planı seçemez.');
     check(Object.hasOwn(TEMPOS,action.tempo)&&Object.hasOwn(STYLES,action.style),'Geçersiz maç planı.');
     t.matchPlans??={};t.matchPlans[planKey(t)]??={};
@@ -132,6 +157,7 @@ export function transition(previous,catalogue,action) {
   } else if(action.type==='simulate') {
     check(state.phase==='tournament'&&state.tournament.stage!=='done','Simüle edilecek maç kalmadı.');
     check(pendingMatchPlans(state.tournament).length===0,'Sahaya çıkacak katılımcılar maç planını kilitlemeli.');
+    check(pendingUpgrades(state.tournament).length===0,'Önce yükseltme seçimlerini tamamlayın veya pas geçin.');
     advanceTournament(state);
   } else throw new Error('Bilinmeyen işlem.');
   return state;
@@ -212,8 +238,8 @@ function poisson(state,lambda) {
   return k-1;
 }
 export function simulateMatch(state,home,away,neutral=false,version=SIMULATION_VERSION,context={}) {
-  if(version>=3)return (version>=4?simulateOpportunities:simulateV3)(()=>random(state),home,away,neutral,context);
-  const expectation=expectedGoals(home,away,neutral,version);
+  if(version>=3)return (version>=5?simulateOpportunities:version===4?simulateV4:simulateV3)(()=>random(state),home,away,neutral,context);
+  const expectation=expectedV4(home,away,neutral,version);
   return {home:home.id,away:away.id,neutral,hg:poisson(state,expectation.lambdaHome),ag:poisson(state,expectation.lambdaAway),...expectation};
 }
 export function standings(tournament) {
@@ -263,7 +289,7 @@ function settleTie(state,t,tie,final) {
     if(last.modelVersion>=3){
       const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
       const first=tie.matches.length>1?tie.matches[0]:null;
-      const extra=(last.modelVersion>=4?simulateOpportunities:simulateV3)(()=>random(state),home,away,final,{homePlan:last.plans?.home,awayPlan:last.plans?.away,initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
+      const extra=(last.modelVersion>=5?simulateOpportunities:last.modelVersion===4?simulateV4:simulateV3)(()=>random(state),home,away,final,{homePlan:last.plans?.home,awayPlan:last.plans?.away,initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
       eh=extra.hg;ea=extra.ag;last.lambdaHome+=extra.lambdaHome;last.lambdaAway+=extra.lambdaAway;
       last.events.push(...extra.events);
       for(const side of ['home','away'])for(const key of Object.keys(last.stats[side]))last.stats[side][key]+=extra.stats[side][key];

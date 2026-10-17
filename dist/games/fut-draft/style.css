@@ -8,3 +8,5 @@
 @media(prefers-reduced-motion:no-preference){.player-card{transition:transform .18s,box-shadow .18s}.cards{animation:reveal .3s ease-out}@keyframes reveal{from{opacity:.2;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}}
 
 .plan-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px}.plan-choice{padding:16px;border:1px solid var(--team-color);border-radius:12px}.plan-choice label{display:block;margin:12px 0}.plan-choice select{display:block;width:100%;margin-top:6px}.plan-choice button{width:100%;margin-top:8px}
+
+.upgrade-panel select{display:block;width:100%;margin:8px 0 16px}.upgrade-panel .secondary{margin-top:12px}.upgrade-panel .player-card{min-width:0}

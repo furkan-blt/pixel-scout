@@ -9,12 +9,12 @@ import {pendingMatchPlans,planKey,computerPlan} from '../dist/games/fut-draft/ma
 const data=JSON.parse(fs.readFileSync(new URL('../dist/games/fut-draft/players.json',import.meta.url)));
 const positions=['GK',...Array(4).fill('DEF'),...Array(3).fill('MID'),...Array(3).fill('ATT')];
 const team=(id,rating=82,human=false)=>({id,human,roster:positions.map((position,i)=>({id:9000000+i,position,overall:rating,clubId:4,country:'Türkiye'}))});
-function cup(seed=77){const s=createGame(['A','B','C'],undefined,seed),used=new Set();for(const t of s.teams)for(const [pos,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===pos&&!used.has(p.id)).slice(0,n)){used.add(p.id);t.roster.push(p);}s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data);return s;}
+function cup(seed=77){const s=createGame(['A','B','C'],undefined,seed),used=new Set();for(const t of s.teams)for(const [pos,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===pos&&!used.has(p.id)).slice(0,n)){used.add(p.id);t.roster.push(p);}s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data,{version:4});return s;}
 test('v4 club pool contains only verified season participants, with factual full XIs and at most five English clubs',()=>{
  const clubs=computerTeams(data);assert.equal(clubs.length,34);assert.equal(clubs.filter(t=>t.association==='ENG').length,5);assert.equal(UNAVAILABLE_CLUBS.length,2);
  assert.ok(!clubs.some(t=>/Chelsea|Everton|Tottenham/.test(t.name)));
  for(const t of clubs){assert.equal(t.roster.length,11);assert.equal(new Set(t.roster.map(p=>p.id)).size,11);assert.ok(t.roster.every(p=>p.clubId===t.clubId));for(const [pos,n] of Object.entries(LIMITS))assert.equal(t.roster.filter(p=>p.position===pos).length,n);}
- for(const count of [3,4,5]){const s=cup();s.teams=Array.from({length:count},(_,i)=>({...s.teams[i%3],id:`human-${i}`}));const t=createTournament(s,data);assert.equal(t.teams.length,36);assert.ok(t.teams.filter(t=>!t.human).every(t=>SEASON_TEAMS.some(c=>c.id===t.id)));}
+ for(const count of [3,4,5]){const s=cup();s.teams=Array.from({length:count},(_,i)=>({...s.teams[i%3],id:`human-${i}`}));const t=createTournament(s,data,{version:4});assert.equal(t.teams.length,36);assert.ok(t.teams.filter(t=>!t.human).every(t=>SEASON_TEAMS.some(c=>c.id===t.id)));}
 });
 test('EA feature table covers every actual draft and season player; important role fields are factual',()=>{
  const roleKeys={GK:['gkDiving','gkHandling','gkPositioning','gkReflexes'],DEF:['defensiveAwareness','interceptions','standingTackle','stamina'],MID:['vision','shortPassing','ballControl','stamina'],ATT:['finishing','positioning','composure','shotPower','stamina']};

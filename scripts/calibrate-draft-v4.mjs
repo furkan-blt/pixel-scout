@@ -19,7 +19,7 @@ while(base.phase==='draft'){
 }
 const cups=200,champions={},scoreCounts={},tacticalCounts={},gapBins={};let totalMatches=0,totalGoals=0,extraTime=0;
 for(let i=0;i<cups;i++){
-  let s=structuredClone(base);s.rng=((0x9e3779b9^Math.imul(i+1,2654435761))>>>0)||1;s.phase='tournament';s.tournament=createTournament(s,data);
+  let s=structuredClone(base);s.rng=((0x9e3779b9^Math.imul(i+1,2654435761))>>>0)||1;s.phase='tournament';s.tournament=createTournament(s,data,{version:4});
   while(s.tournament.stage!=='done'){for(const team of pendingMatchPlans(s.tournament))s=transition(s,data,{type:'match-plan',team:team.id,tempo:'normal',style:'balanced'});s=transition(s,data,{type:'simulate'});}
   const t=s.tournament,name=t.teams.find(x=>x.id===t.champion).name;champions[name]=(champions[name]||0)+1;
   for(const m of t.history.flatMap(w=>w.matches)){
@@ -33,6 +33,6 @@ for(let i=0;i<cups;i++){
   if((i+1)%50===0)console.log(`Completed ${i+1}/${cups} cups`);
 }
 const tactics=Object.keys(STYLES).flatMap(style=>Object.keys(TEMPOS).map(tempo=>({style,tempo,...expectedGoals(psg,utd,true,4,{homePlan:{style,tempo}})})));
-const report={tactics,description:'Game-design validation only, not real-world odds. Pair experiments are neutral. 200 full cups reuse one seeded 3-user draft, choosing highest OVR per pack and skipping steals; fixture/match seeds vary. Cup score counts include extra time. V4 human knockout plans use normal tempo/balanced; AI plans follow the same fixed ability-based rule as production. Both pair models use the same new participant pool.',comparisons,cups:{count:cups,matches:totalMatches,meanGoals:totalGoals/totalMatches,extraTimeMatches:extraTime,champions:Object.fromEntries(Object.entries(champions).sort((a,b)=>b[1]-a[1])),tacticalCounts,gapBins,mostCommonScores:Object.entries(scoreCounts).sort((a,b)=>b[1]-a[1]).slice(0,15)},teams:[psg,utd,...base.teams.map(t=>({...t,human:true}))].map(t=>({name:t.name,human:t.human,profile:profileForTeam(t)}))};
+const report={tactics,description:'Game-design validation only, not real-world odds. Pair experiments are neutral. 200 full cups reuse one seeded 3-user draft, choosing highest OVR per pack and skipping steals; fixture/match seeds vary. Cup score counts include extra time. V4 human knockout plans use normal tempo/balanced; AI plans follow the same fixed ability-based rule as production. Both pair models use the same new participant pool.',comparisons,cups:{count:cups,matches:totalMatches,meanGoals:totalGoals/totalMatches,extraTimeMatches:extraTime,champions:Object.fromEntries(Object.entries(champions).sort((a,b)=>b[1]-a[1])),tacticalCounts,gapBins,mostCommonScores:Object.entries(scoreCounts).sort((a,b)=>b[1]-a[1]).slice(0,15)},teams:[psg,utd,...base.teams.map(t=>({...t,human:true}))].map(t=>({name:t.name,human:t.human,profile:profileForTeam(t,4)}))};
 if(process.argv.includes('--write'))fs.writeFileSync(fileURLToPath(new URL('../research/fut-draft-balance-v4.json',import.meta.url)),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({comparisons,cups:report.cups},null,2));

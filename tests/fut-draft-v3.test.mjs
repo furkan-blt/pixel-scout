@@ -92,7 +92,7 @@ test('full event-model cup keeps extra time, stats, winners and save migration c
   }
   assert.ok(sawExtra);
   const old=cup();old.tournament.simulationVersion=2;old.tournament.history=[{stage:'league',matches:[]}];assert.equal(migrateSaved(old).tournament.simulationVersion,2);
-  old.tournament.history=[];assert.equal(migrateSaved(old).tournament.simulationVersion,4);
+  old.tournament.history=[];assert.equal(migrateSaved(old).tournament.simulationVersion,5);
   const oldDraft=createGame(['A','B','C'],[20,30,30,15,5]);assert.deepEqual(migrateSaved(oldDraft).odds,[20,40,25,10,5]);
   oldDraft.odds=[10,20,30,20,20];assert.deepEqual(migrateSaved(oldDraft).odds,oldDraft.odds);assert.deepEqual(ODDS,[20,40,25,10,5]);
 });
