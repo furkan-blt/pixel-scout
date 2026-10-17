@@ -1,0 +1,211 @@
+{
+  "season": "2026/27",
+  "verifiedAt": "2026-10-17",
+  "uefaSource": "https://www.uefa.com/uefachampionsleague/news/02a8-2171a88881a0-c70193b972c6-1000--meet-the-2026-27-champions-league-league-phase-teams/",
+  "officialParticipants": [
+    {
+      "name": "AEK Athens",
+      "association": "GRE"
+    },
+    {
+      "name": "Arsenal",
+      "association": "ENG"
+    },
+    {
+      "name": "Aston Villa",
+      "association": "ENG"
+    },
+    {
+      "name": "Atlético de Madrid",
+      "association": "ESP"
+    },
+    {
+      "name": "Barcelona",
+      "association": "ESP"
+    },
+    {
+      "name": "Bayern München",
+      "association": "GER"
+    },
+    {
+      "name": "Bodø/Glimt",
+      "association": "NOR"
+    },
+    {
+      "name": "Borussia Dortmund",
+      "association": "GER"
+    },
+    {
+      "name": "Club Brugge",
+      "association": "BEL"
+    },
+    {
+      "name": "Como",
+      "association": "ITA"
+    },
+    {
+      "name": "Fenerbahçe",
+      "association": "TUR"
+    },
+    {
+      "name": "Feyenoord",
+      "association": "NED"
+    },
+    {
+      "name": "Galatasaray",
+      "association": "TUR"
+    },
+    {
+      "name": "Inter",
+      "association": "ITA"
+    },
+    {
+      "name": "LASK",
+      "association": "AUT"
+    },
+    {
+      "name": "Leipzig",
+      "association": "GER"
+    },
+    {
+      "name": "Lens",
+      "association": "FRA"
+    },
+    {
+      "name": "Lille",
+      "association": "FRA"
+    },
+    {
+      "name": "Liverpool",
+      "association": "ENG"
+    },
+    {
+      "name": "Manchester City",
+      "association": "ENG"
+    },
+    {
+      "name": "Man United",
+      "association": "ENG"
+    },
+    {
+      "name": "Napoli",
+      "association": "ITA"
+    },
+    {
+      "name": "Paris SG",
+      "association": "FRA"
+    },
+    {
+      "name": "Porto",
+      "association": "POR"
+    },
+    {
+      "name": "PSV",
+      "association": "NED"
+    },
+    {
+      "name": "Real Betis",
+      "association": "ESP"
+    },
+    {
+      "name": "Real Madrid",
+      "association": "ESP"
+    },
+    {
+      "name": "Roma",
+      "association": "ITA"
+    },
+    {
+      "name": "Sabah",
+      "association": "AZE"
+    },
+    {
+      "name": "Shakhtar",
+      "association": "UKR"
+    },
+    {
+      "name": "Slavia Praha",
+      "association": "CZE"
+    },
+    {
+      "name": "Slovan Bratislava",
+      "association": "SVK"
+    },
+    {
+      "name": "Sporting CP",
+      "association": "POR"
+    },
+    {
+      "name": "Stuttgart",
+      "association": "GER"
+    },
+    {
+      "name": "Viking",
+      "association": "NOR"
+    },
+    {
+      "name": "Villarreal",
+      "association": "ESP"
+    }
+  ],
+  "availableClubs": 34,
+  "unavailable": [
+    {
+      "name": "Sabah",
+      "reason": "No licensed FC27 club identifier in the EA filter snapshot."
+    },
+    {
+      "name": "Slovan Bratislava",
+      "reason": "No licensed FC27 club identifier in the EA filter snapshot."
+    }
+  ],
+  "selection": "Highest-overall feasible 4-3-3 using verified primary or alternate EA positions. 31–33 available clubs plus user teams; no non-participant league fillers.",
+  "attributeKeys": [
+    "finishing",
+    "positioning",
+    "composure",
+    "shotPower",
+    "vision",
+    "shortPassing",
+    "ballControl",
+    "defensiveAwareness",
+    "interceptions",
+    "standingTackle",
+    "stamina",
+    "sprintSpeed",
+    "gkDiving",
+    "gkHandling",
+    "gkPositioning",
+    "gkReflexes",
+    "penalties"
+  ],
+  "attributePlayers": 4934,
+  "baseSourceManifest": "research/fut-draft-data.json",
+  "fullClubSnapshots": [
+    {
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?team=101059",
+      "sha256": "38e9262100877842d323663a20dbfa902b23ca0b2eab7586e2a2efcd7e6ae3b5",
+      "players": 34
+    },
+    {
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?team=22",
+      "sha256": "4445a1b0cbdf44a4d372291da802069f4142f2511690e99714938741c1889983",
+      "players": 29
+    },
+    {
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?team=252",
+      "sha256": "d6cbc266d6c2d490e94292445a342b66c87488e67ed6d7297196052119d60eea",
+      "players": 23
+    },
+    {
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?team=300",
+      "sha256": "da2f1302b4830706dc4af770bb785dbb82427c1aac243926d42710a69fc4e305",
+      "players": 30
+    },
+    {
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?team=918",
+      "sha256": "438287b642576b10d42c86b87a69de398b413dce00b0415612e2a2c3d1b29ab1",
+      "players": 25
+    }
+  ]
+}
