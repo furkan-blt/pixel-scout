@@ -1,0 +1,114 @@
+{
+  "description": "Game design calibration, not real-world probabilities. Same three-user highest-OVR draft and same seed set per model, steals skipped. 30 cups per model; V6 draw presentation is acknowledged without consuming RNG. V5/V6 rewards choose lowest eligible outgoing player and highest OVR from the opened pack; human plans normal/balanced. Initial power ranking is frozen before all upgrades; league table uses eight games per team. Knockout scores include extra time.",
+  "pairs": [
+    {
+      "label": "Paris–United",
+      "version": 5,
+      "matches": 10000,
+      "winPercent": 99.99,
+      "drawPercent": 0.01,
+      "lossPercent": 0,
+      "threePlusMarginPercent": 46.22,
+      "meanGoals": 3.4993,
+      "meanAbsoluteGoalsVsExpectationError": 0.4380790850560269,
+      "threePlusGoalsVsExpectationErrorPercent": 0
+    },
+    {
+      "label": "Paris–United",
+      "version": 6,
+      "matches": 10000,
+      "winPercent": 99.99,
+      "drawPercent": 0.01,
+      "lossPercent": 0,
+      "threePlusMarginPercent": 44.81,
+      "meanGoals": 3.4966,
+      "meanAbsoluteGoalsVsExpectationError": 0.43096632729221945,
+      "threePlusGoalsVsExpectationErrorPercent": 0
+    },
+    {
+      "label": "Equal power",
+      "version": 5,
+      "matches": 10000,
+      "winPercent": 21.31,
+      "drawPercent": 56.74,
+      "lossPercent": 21.95,
+      "threePlusMarginPercent": 0,
+      "meanGoals": 2.6425,
+      "meanAbsoluteGoalsVsExpectationError": 0.4352419071618122,
+      "threePlusGoalsVsExpectationErrorPercent": 0
+    },
+    {
+      "label": "Equal power",
+      "version": 6,
+      "matches": 10000,
+      "winPercent": 31.15,
+      "drawPercent": 38.3,
+      "lossPercent": 30.55,
+      "threePlusMarginPercent": 0,
+      "meanGoals": 2.6349,
+      "meanAbsoluteGoalsVsExpectationError": 0.43246009332363056,
+      "threePlusGoalsVsExpectationErrorPercent": 0
+    },
+    {
+      "label": "2.4 power gap",
+      "version": 5,
+      "matches": 10000,
+      "winPercent": 79.67,
+      "drawPercent": 19.88,
+      "lossPercent": 0.45,
+      "threePlusMarginPercent": 0.63,
+      "meanGoals": 2.7871,
+      "meanAbsoluteGoalsVsExpectationError": 0.2582496278593835,
+      "threePlusGoalsVsExpectationErrorPercent": 0
+    },
+    {
+      "label": "2.4 power gap",
+      "version": 6,
+      "matches": 10000,
+      "winPercent": 79.49,
+      "drawPercent": 19.75,
+      "lossPercent": 0.76,
+      "threePlusMarginPercent": 0.71,
+      "meanGoals": 2.7873,
+      "meanAbsoluteGoalsVsExpectationError": 0.25570297029459443,
+      "threePlusGoalsVsExpectationErrorPercent": 0
+    }
+  ],
+  "cups": [
+    {
+      "version": 5,
+      "cups": 30,
+      "matches": 5670,
+      "meanGoals": 3.3594356261022926,
+      "threePlusMarginPercent": 31.604938271604937,
+      "meanAbsoluteLeagueRankError": 1.924074074074074,
+      "meanSpearmanPowerVsLeagueRanking": 0.9685885885885884,
+      "upgrades": 76,
+      "champions": {
+        "Barcelona": 8,
+        "Bayern München": 1,
+        "Paris SG": 18,
+        "Real Madrid": 1,
+        "Arsenal": 2
+      }
+    },
+    {
+      "version": 6,
+      "cups": 30,
+      "matches": 5670,
+      "meanGoals": 3.3740740740740742,
+      "threePlusMarginPercent": 31.30511463844797,
+      "meanAbsoluteLeagueRankError": 2.0722222222222224,
+      "meanSpearmanPowerVsLeagueRanking": 0.9631574431574433,
+      "upgrades": 84,
+      "champions": {
+        "Draft A": 5,
+        "Barcelona": 8,
+        "Paris SG": 13,
+        "Real Madrid": 2,
+        "Arsenal": 1,
+        "Bayern München": 1
+      }
+    }
+  ]
+}
