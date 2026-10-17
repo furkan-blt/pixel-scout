@@ -1,3 +1,4 @@
+import {drawPending} from '../dist/games/fut-draft/draw.js';
 import {pendingUpgrades} from '../dist/games/fut-draft/upgrades.js';
 import {pendingMatchPlans} from '../dist/games/fut-draft/match-plans.js';
 // Application event/render smoke tests with a DOM boundary stub; no browser layout claims.
@@ -27,7 +28,7 @@ async function environment(saved=null,brokenStorage=false){
     submit:()=>listeners.get('submit')({target:{id:'setup-form'},preventDefault(){}}),
     click:(id='',dataset={})=>listeners.get('click')({target:{closest:()=>({id,dataset,disabled:false,hasAttribute:attr=>attr==='data-new-game'&&dataset.newGame!==undefined})}}),
     change:(id,value)=>listeners.get('change')({target:{id,value}}),
-    advance:ms=>{const end=now+ms;for(const [id,timer] of [...timers].sort((a,b)=>a[1].at-b[1].at)){if(timer.at<=end){timers.delete(id);now=timer.at;timer.fn();}}now=end;},
+    advance:ms=>{const end=now+ms;let count=0;while(timers.size){const [id,timer]=[...timers].sort((a,b)=>a[1].at-b[1].at)[0];if(timer.at>end)break;assert.ok(++count<10000);timers.delete(id);now=timer.at;timer.fn();}now=end;},
     node,
   };
 }
@@ -63,16 +64,16 @@ test('UI event flow reaches cup, hides locked choices and resumes behind handoff
     }
     ui.click('steal-next');s=ui.state();
   }
-  assert.equal(s.phase,'tournament');assert.match(ui.html(),/1\. HAFTAYI SİMÜLE ET/);
+  assert.equal(s.phase,'tournament');assert.match(ui.html(),/KURA GECESİ/);ui.click('draw-all');ui.click('draw-finish');assert.match(ui.html(),/1\. HAFTAYI SİMÜLE ET/);
   ui.click('simulate');s=ui.state();assert.equal(s.tournament.week,1);assert.match(ui.html(),/Lig · 1\. hafta/);
   assert.match(ui.html(),/Maçın akışı ve pozisyonlar/);assert.match(ui.html(),/Tehlikeli fırsat/);
   ui=await environment(s);assert.match(ui.html(),/2\. HAFTAYI SİMÜLE ET/);
   ui.click('',{cupView:'table'});assert.match(ui.html(),/<table>/);assert.match(ui.html(),/UI 1/);
-  while(s.tournament.stage!=='done'){for(const team of pendingUpgrades(s.tournament)){ui.click('',{upgradeSkip:team.id});s=ui.state();}for(const team of pendingMatchPlans(s.tournament)){assert.match(ui.html(),/PLANI KİLİTLE/);ui.node('#plan-tempo-'+team.id).value='high';ui.node('#plan-style-'+team.id).value='counter';ui.click('',{lockPlan:team.id});}ui.click('simulate');s=ui.state();}
+  let cupSteps=0;while(s.tournament.stage!=='done'){assert.ok(++cupSteps<80,JSON.stringify({stage:s.tournament.stage,live:s.tournament.live?.minute,notice:ui.node('#notice').textContent}));if(drawPending(s.tournament)){ui.click('draw-all');ui.click('draw-finish');s=ui.state();}for(const team of pendingUpgrades(s.tournament)){ui.click('',{upgradeSkip:team.id});s=ui.state();}for(const team of pendingMatchPlans(s.tournament)){assert.match(ui.html(),/PLANI KİLİTLE/);ui.node('#plan-tempo-'+team.id).value='high';ui.node('#plan-style-'+team.id).value='counter';ui.click('',{lockPlan:team.id});}ui.click('simulate');ui.advance(200000);s=ui.state();}
   assert.match(ui.html(),/FUT DRAFT KAZANANI/);assert.match(ui.html(),/zafer senin/);
   ui.click('',{cupView:'bracket'});assert.match(ui.html(),/bracket-column/);
   ui.click('',{cupView:'squads'});assert.match(ui.html(),/Kadro dosyası/);
-  assert.match(ui.html(),/chemistry-lines/);assert.match(ui.html(),/MODEL 5/);
+  assert.match(ui.html(),/chemistry-lines/);assert.match(ui.html(),/MODEL 6/);
   ui.change('cup-squad-select','12');assert.match(ui.html(),/TAKIM GÜCÜ/);
   assert.match(ui.html(),/Kulüp kimyası · uygulanmaz/);assert.match(ui.html(),/Kulüp bonusu yok/);
   ui.click('restart');assert.ok(ui.node('#reset-dialog').open);ui.click('confirm-reset');assert.match(ui.html(),/Masayı kur/);
@@ -117,7 +118,7 @@ test('quarterfinal UI requires plans, saves each lock and reveals tactics only a
     assert.doesNotMatch(ui.html(),new RegExp('id="plan-tempo-'+team.id+'"'));
     ui=await environment(saved);assert.doesNotMatch(ui.html(),new RegExp('id="plan-tempo-'+team.id+'"'));
   }
-  assert.doesNotMatch(ui.html(),/id="simulate" disabled/);ui.click('simulate');
+  assert.doesNotMatch(ui.html(),/id="simulate" disabled/);ui.click('simulate');ui.advance(200000);
   assert.equal(ui.state().tournament.bracket.at(-1).leg,1);assert.match(ui.html(),/Yüksek tempo · Kontra atak/);assert.match(ui.html(),/İsabetli şut/);assert.match(ui.html(),/id="simulate" disabled/);
 });
 
@@ -125,11 +126,25 @@ test('upgrade UI opens three cards sequentially, survives reload, swaps the play
  const {createGame,createTournament}=await import('../dist/games/fut-draft/rules.js');
  let s=createGame(['Upgrade A','Upgrade B','Upgrade C'],undefined,33),used=new Set();
  for(const team of s.teams)for(const [position,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===position&&p.overall<=76&&!used.has(p.id)).slice(0,n)){team.roster.push(p);used.add(p.id);}
- s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data);const t=s.tournament;t.stage='r16';t.history=[{stage:'league',matches:[],label:'Lig',number:1}];t.leagueRanking=t.teams.map(t=>t.id);t.bracket=[{stage:'r16',leg:0,ties:Array.from({length:8},(_,i)=>({a:t.teams[i*2].id,b:t.teams[i*2+1].id,matches:[]}))}];
+ s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data,{version:5});const t=s.tournament;t.stage='r16';t.history=[{stage:'league',matches:[],label:'Lig',number:1}];t.leagueRanking=t.teams.map(t=>t.id);t.bracket=[{stage:'r16',leg:0,ties:Array.from({length:8},(_,i)=>({a:t.teams[i*2].id,b:t.teams[i*2+1].id,matches:[]}))}];
  let ui=await environment(s);assert.match(ui.html(),/KADRO YÜKSELTME/);assert.match(ui.html(),/id="simulate" disabled/);
- const id=s.teams[0].id,old=s.teams[0].roster[0];ui.node('#upgrade-player').value=String(old.id);ui.click('',{upgradeOpen:id});s=ui.state();const pack=s.tournament.upgrades.r16[id].pack;assert.equal(pack.options.length,3);assert.match(ui.html(),/data-upgrade-pick=/);
+ const id=s.teams[0].id,old=s.teams[0].roster[0];ui.click('',{upgradePlayer:String(old.id)});ui.click('',{upgradeOpen:id});s=ui.state();const pack=s.tournament.upgrades.r16[id].pack;assert.equal(pack.options.length,3);assert.match(ui.html(),/data-upgrade-pick=/);
  ui.click('',{upgradePick:String(pack.options[0].id),upgradeTeam:id});assert.equal(ui.state().tournament.upgrades.r16[id].done,false);
  ui.advance(900);ui=await environment(ui.state());ui.click('',{upgradePick:String(pack.options[0].id),upgradeTeam:id});s=ui.state();assert.equal(s.tournament.upgrades.r16[id].done,true);assert.ok(s.teams[0].roster.some(p=>p.id===pack.options[0].id));
  for(const team of pendingUpgrades(s.tournament)){ui.click('',{upgradeSkip:team.id});s=ui.state();}
- ui.click('simulate');s=ui.state();const goal=s.tournament.history.at(-1).matches.flatMap(m=>m.events)[0];assert.ok(goal?.playerName);assert.ok(ui.html().includes(goal.playerName.replaceAll('&','&amp;').replaceAll("'",'&#39;')));assert.equal(s.tournament.bracket.at(-1).leg,1);
+ ui.click('simulate');ui.advance(200000);s=ui.state();const goal=s.tournament.history.at(-1).matches.flatMap(m=>m.events)[0];assert.ok(goal?.playerName);assert.ok(ui.html().includes(goal.playerName.replaceAll('&','&amp;').replaceAll("'",'&#39;')));assert.equal(s.tournament.bracket.at(-1).leg,1);
+});
+
+test('draw timer reveals one opponent at a time and full XI selection exposes eleven pitch buttons',async()=>{
+ const {createGame,createTournament}=await import('../dist/games/fut-draft/rules.js');let s=createGame(['Draw A','Draw B','Draw C'],undefined,22);const used=new Set();for(const team of s.teams)for(const [position,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===position&&p.overall<=76&&!used.has(p.id)).slice(0,n)){team.roster.push(p);used.add(p.id);}s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data);
+ let ui=await environment(s);assert.match(ui.html(),/Güç sırasına göre 4 torba/);assert.equal(ui.state().tournament.draw.revealed,0);ui.advance(649);assert.equal(ui.state().tournament.draw.revealed,0);ui.advance(1);assert.equal(ui.state().tournament.draw.revealed,1);
+ ui=await environment(ui.state());assert.equal(ui.state().tournament.draw.revealed,1);ui.click('draw-all');assert.equal((ui.html().match(/fixture-column team-panel/g)||[]).length,3);ui.click('draw-finish');
+ s=ui.state();s.tournament.history=[{stage:'league',matches:[],label:'Lig',number:1}];s.tournament.stage='r16';s.tournament.leagueRanking=s.tournament.teams.map(t=>t.id);s.tournament.bracket=[{stage:'r16',leg:0,ties:[{a:s.teams[0].id,b:s.teams[1].id,matches:[]}]}];
+ ui=await environment(s);assert.equal((ui.html().match(/data-upgrade-player=/g)||[]).length,11);assert.doesNotMatch(ui.html(),/id="upgrade-player"/);assert.match(ui.html(),/data-upgrade-open="human-0" disabled/);ui.click('',{upgradePlayer:String(s.teams[0].roster[0].id)});assert.doesNotMatch(ui.html(),/data-upgrade-open="human-0" disabled/);
+});
+test('live UI has one shared minute, pauses and changes speed, reloads paused, and never leaks final scorers',async()=>{
+ const {createGame,createTournament}=await import('../dist/games/fut-draft/rules.js');let s=createGame(['Live A','Live B','Live C'],undefined,21);const used=new Set();for(const team of s.teams)for(const [position,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===position&&!used.has(p.id)).slice(0,n)){team.roster.push(p);used.add(p.id);}s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data);const t=s.tournament;t.draw.done=true;t.draw.revealed=t.draw.total;t.stage='playoff';t.history=[{stage:'league',matches:[],label:'Lig',number:1}];t.leagueRanking=t.teams.map(t=>t.id);t.bracket=[{stage:'playoff',leg:0,ties:[{a:t.teams[0].id,b:t.teams[3].id,matches:[]}]}];
+ let ui=await environment(s);ui.click('simulate');s=ui.state();assert.equal(s.tournament.live.minute,0);assert.match(ui.html(),/CANLI MAÇ GÜNÜ/);const future=s.tournament.live.result.history.at(-1).matches[0].events[0];assert.ok(future);assert.ok(!ui.html().includes(future.playerName));
+ ui.advance(2000);assert.equal(ui.state().tournament.live.minute,10);ui.click('live-toggle');ui.advance(5000);assert.equal(ui.state().tournament.live.minute,10);ui.click('live-faster');assert.equal(ui.state().tournament.live.speed,2);ui.click('live-toggle');ui.advance(400);assert.equal(ui.state().tournament.live.minute,14);
+ ui=await environment(ui.state());assert.equal(ui.state().tournament.live.paused,true);ui.advance(3000);assert.equal(ui.state().tournament.live.minute,14);ui.click('live-toggle');ui.advance(200000);assert.equal(ui.state().tournament.live,undefined);assert.equal(ui.state().tournament.bracket.at(-1).leg,1);
 });

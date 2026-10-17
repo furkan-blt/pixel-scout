@@ -1,3 +1,6 @@
+import {drawPending,DRAW_INTERVAL} from './draw.js';
+import {drawScreen,fixtureComparison} from './draw-ui.js';
+import {LIVE_SPEEDS,LIVE_INTERVAL,visibleMatch} from './live.js';
 import {pendingUpgrades,upgradeOptions,UPGRADE_LEVELS} from './upgrades.js';
 import {POSITIONS,LIMITS,ODDS,STORAGE_KEY,createGame,activeSeat,transition,tierOf,compensationOptions,standings,validateSaved,teamStrength,COLORS,stealVictim,stealAttacker,migrateSaved,profileForTeam} from './rules.js';
 import {TEMPOS,STYLES,planKey,matchPlanWindow,pendingMatchPlans} from './match-plans.js';
@@ -10,7 +13,7 @@ const avg=roster=>roster.length?(roster.reduce((s,p)=>s+p.overall,0)/roster.leng
 const STAGES={league:'Lig aşaması',playoff:'Play-off',r16:'Son 16',quarter:'Çeyrek final',semi:'Yarı final',final:'Final',champion:'Şampiyon',done:'Turnuva tamamlandı'};
 let catalogue,state=null,participantCount=3,names=['Takım 1','Takım 2','Takım 3','Takım 4','Takım 5'],odds=[...ODDS];
 let selectedPosition='ATT',useJoker=false,squadSeat=0,privateOpen=false,protect=null,target=null,cupView='matches',historyIndex=-1;
-let storageWorks=true,corruptSave=false,noticeTimer;
+let storageWorks=true,corruptSave=false,noticeTimer,presentationTimer,upgradePlayer=null;
 let teamColors=COLORS.slice(0,5).map(c=>c.id),revealedCards=3,packRevealing=false;
 const reveal=createPackReveal((count,running)=>{
   revealedCards=count;packRevealing=running;
@@ -40,6 +43,11 @@ function save(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
   catch{if(storageWorks)notify('Tarayıcı kaydı kullanılamıyor. Bu sekmeyi kapatmadan oyunu tamamlayabilirsin.');storageWorks=false;}
 }
+function syncPresentation(){
+ clearTimeout(presentationTimer);const t=state?.tournament;if(!t)return;
+ if(drawPending(t)&&t.draw.revealed<t.draw.total)presentationTimer=setTimeout(()=>apply({type:'draw-next'}),DRAW_INTERVAL[t.draw.kind]);
+ else if(t.live&&!t.live.paused)presentationTimer=setTimeout(()=>apply({type:t.live.minute<t.live.duration?'live-tick':'live-finish'}),t.live.minute<t.live.duration?LIVE_INTERVAL/t.live.speed:900);
+}
 function apply(action){
   try{
     if(['pick','upgrade-pick'].includes(action.type)&&packRevealing)return;
@@ -48,11 +56,11 @@ function apply(action){
     if(action.type==='open'||action.type==='upgrade-open'){
       reveal.stop();revealedCards=0;packRevealing=true;
     }
-    if(action.type==='upgrade-pick'||action.type==='upgrade-skip'){reveal.stop();packRevealing=false;revealedCards=3;}
+    if(action.type==='upgrade-pick'||action.type==='upgrade-skip'){upgradePlayer=null;reveal.stop();packRevealing=false;revealedCards=3;}
     if(action.type==='pick'){reveal.stop();useJoker=false;if(state.phase==='draft')squadSeat=activeSeat(state);}
     if(action.type==='lock'||action.type==='steal-next'){privateOpen=false;protect=null;target=null;}
-    if(action.type==='simulate'){historyIndex=state.tournament.history.length>oldHistory?state.tournament.history.length-1:-1;cupView='matches';}
-    save();render();
+    if(action.type==='simulate'||action.type==='live-finish'){historyIndex=state.tournament.history.length>oldHistory?state.tournament.history.length-1:-1;cupView='matches';}
+    save();render();syncPresentation();
     if(action.type==='open'||action.type==='upgrade-open')reveal.start();
     if(['lock','exchange-start','compensate','steal-next'].includes(action.type))window.scrollTo({top:0,behavior:'instant'});
   }catch(error){notify(error.message,true);}
@@ -63,14 +71,15 @@ function stageProgress(){
   return `<div class="process" aria-label="Oyun aşamaları">${['01 DRAFT','02 GİZLİ ÇALMA','03 AVRUPA KUPASI'].map((label,i)=>`<span class="${i===current?'active':i<current?'done':''}" ${i===current?'aria-current="step"':''}>${label}</span>`).join('')}</div>`;
 }
 function levelStrip(weights=state?.odds||odds){return `<div class="level-strip" aria-label="Seviye olasılıkları">${weights.map((weight,i)=>`<div class="tier-${i+1}"><b>%${weight}</b><span>${i+1}. SEVİYE · ${['85+','81–84','77–80','73–76','70–72'][i]}</span></div>`).join('')}</div>`;}
-function pitch(roster=[],{clubEligible=true}={}){
+function pitch(roster=[],{clubEligible=true,upgrade=null}={}){
   const slots=formationSlots(roster),pairs=chemistryPairs(roster,{clubEligible}),edges=chemistryNetwork(slots,{clubEligible});
   const name=id=>roster.find(p=>p.id===id)?.name||'';
   const label=edge=>edge.club&&edge.nation?'Kulüp + milliyet':edge.club?'Aynı kulüp':'Aynı milliyet';
   const lines=edges.map(e=>`<line class="chem-link ${e.club&&e.nation?'both':e.club?'club':'nation'}" x1="${e.x1*4}" y1="${e.y1*4.2}" x2="${e.x2*4}" y2="${e.y2*4.2}"><title>${h(name(e.a))} ↔ ${h(name(e.b))}: ${label(e)}</title></line>`).join('');
   return `<div class="pitch-with-chemistry"><div class="pitch chem-pitch" aria-label="4-3-3 kadro ve kimya bağlantıları"><svg class="chemistry-lines" viewBox="0 0 400 420" preserveAspectRatio="none" role="img" aria-label="${edges.length} kimya bağlantı çizgisi">${lines}</svg>${slots.map(slot=>{
     const p=slot.player,connected=p&&pairs.some(e=>e.a===p.id||e.b===p.id);
-    return `<div class="pitch-player ${p?'tier-'+tierOf(p.overall):'empty'} ${connected?'chem-linked':''}" style="left:${slot.x}%;top:${slot.y}%" ${p?`title="${h(p.name)} · ${h(p.club)} · ${h(p.country||'—')}"`:''}><strong>${p?p.overall:'+'}</strong><span>${p?h(p.name):POSITIONS[slot.position]}</span></div>`;
+    const tag=upgrade&&p?'button':'div',allowed=upgrade?.eligible.has(p?.id);
+    return `<${tag} ${upgrade&&p?`type="button" data-upgrade-player="${p.id}" aria-pressed="${upgrade.selected===p.id}" aria-label="${h(p.name)}, ${p.overall} overall; yükseltmek için seç" ${!allowed||upgrade.locked?'disabled':''}`:''} class="pitch-player ${p?'tier-'+tierOf(p.overall):'empty'} ${connected?'chem-linked':''} ${upgrade?.selected===p?.id?'upgrade-selected':''}" style="left:${slot.x}%;top:${slot.y}%" ${p?`title="${h(p.name)} · ${h(p.club)} · ${h(p.country||'—')}"`:''}><strong>${p?p.overall:'+'}</strong><span>${p?h(p.name):POSITIONS[slot.position]}</span></${tag}>`;
   }).join('')}</div>${roster.length>1?`<div class="chem-legend">${clubEligible?'<span><i class="club"></i>Kulüp</span>':''}<span><i class="nation"></i>Milliyet</span>${clubEligible?'<span><i class="both"></i>İkisi</span>':'<span>Kulüp bonusu yok</span>'}</div><details class="chemistry-details"><summary>Kimya bağları · ${pairs.length}</summary>${pairs.length?`<ul>${pairs.map(e=>`<li>${h(name(e.a))} ↔ ${h(name(e.b))}<small>${label(e)}</small></li>`).join('')}</ul>`:'<p>Ortak kulüp veya milliyet bağı yok.</p>'}</details>`:''}</div>`;
 }
 
@@ -118,6 +127,7 @@ function summaryScreen(){return `${stageProgress()}<div class="game-title"><div>
 function teamName(id){return state.tournament.teams.find(t=>t.id===id)?.name||'—';}
 function matchDetails(m){
   if(!(m.modelVersion>=3))return '';
+  if(m.live)return `<div class="live-events" aria-live="polite">${m.events.length?`<ul class="goal-events">${m.events.map(e=>`<li>⚽ ${e.minute}' · ${h(e.playerName||teamName(e.team))}</li>`).join('')}</ul>`:'<p class="muted small">Henüz gol yok.</p>'}${m.stats?`<p class="muted small">Şut ${m.stats.home.shots}–${m.stats.away.shots} · İsabet ${m.stats.home.onTarget}–${m.stats.away.onTarget}</p>`:''}${m.penalties?.kicks?.length?`<p class="risk-badge">Son penaltı: ${h(teamName(m[m.penalties.kicks.at(-1).side]))} ${m.penalties.kicks.at(-1).scored?'⚽ Gol':'✕ Kaçtı'}</p>`:''}</div>`;
   const reasons={'must-win':'Galibiyet gerekli','chasing-24':'İlk 24 için risk','at-risk':'İlk 24 çizgisinde','qualified':'İlk 24 garanti','eliminated':'İlk 24 erişilemez'};
   const plans=['home','away'].filter(side=>reasons[m.tactics?.[side]?.reason]).map(side=>`<span class="risk-badge">${h(teamName(m[side]))}: ${reasons[m.tactics[side].reason]}</span>`).join('');
   const stats=m.stats;
@@ -127,8 +137,8 @@ function matchCard(m){
   const t=state.tournament,home=t.teams.find(x=>x.id===m.home),away=t.teams.find(x=>x.id===m.away);
   const featured=home.human||away.human,played=Number.isInteger(m.hg);
   const homePower=m.homePower??(t.simulationVersion>=2?profileForTeam(home,t.simulationVersion).rating:null),awayPower=m.awayPower??(t.simulationVersion>=2?profileForTeam(away,t.simulationVersion).rating:null);
-  const resultLabel=!played?'MAÇ ÖNCESİ':m.penalties?'PENALTILARLA':m.extra?'UZATMA SONUCU':'MAÇ SONUCU';
-  if(featured)return `<article class="match spotlight-match" style="--home-color:${colorHex(home)};--away-color:${colorHex(away)}"><div class="spotlight-top"><span class="tag">★ ${home.human&&away.human?'DRAFT DERBİSİ':'SİZİN MAÇINIZ'}</span><span>${resultLabel}</span></div><div class="spotlight-score"><div class="spotlight-team">${teamDot(home)}<b>${h(home.name)}</b><small>${m.neutral?'TARAFSIZ SAHA':'EV SAHİBİ'}${homePower!==null?' · GÜÇ '+homePower.toFixed(1):''}</small></div><strong class="big-score">${played?`${m.hg}<span>:</span>${m.ag}`:'<span>VS</span>'}</strong><div class="spotlight-team">${teamDot(away)}<b>${h(away.name)}</b><small>${m.neutral?'TARAFSIZ SAHA':'DEPLASMAN'}${awayPower!==null?' · GÜÇ '+awayPower.toFixed(1):''}</small></div></div>${played&&m.modelVersion>=2?`<p class="expectation">Model gol beklentisi <b>${m.lambdaHome.toFixed(2)} – ${m.lambdaAway.toFixed(2)}</b></p>`:''}${matchDetails(m)}${m.extra?`<div class="match-note">Uzatmalar dahil · uzatma: ${m.extra.home}–${m.extra.away}</div>`:''}${m.penalties?`<div class="match-note">Penaltılar: ${m.penalties.home}–${m.penalties.away}</div>`:''}</article>`;
+  const resultLabel=m.live?(m.finished?'MAÇ TAMAMLANDI':m.penalties?'PENALTILAR':`${m.elapsed}' · ${state.tournament.live.paused?'DURAKLATILDI':'CANLI'}`):!played?'MAÇ ÖNCESİ':m.penalties?'PENALTILARLA':m.extra?'UZATMA SONUCU':'MAÇ SONUCU';
+  if(featured)return `<article class="match spotlight-match" style="--home-color:${colorHex(home)};--away-color:${colorHex(away)}"><div class="spotlight-top"><span class="tag">★ ${home.human&&away.human?'DRAFT DERBİSİ':'SİZİN MAÇINIZ'}</span><span>${resultLabel}</span></div><div class="spotlight-score"><div class="spotlight-team">${teamDot(home)}<b>${h(home.name)}</b><small>${m.neutral?'TARAFSIZ SAHA':'EV SAHİBİ'}${homePower!==null?' · GÜÇ '+homePower.toFixed(1):''}</small></div><strong class="big-score">${played?`${m.hg}<span>:</span>${m.ag}`:'<span>VS</span>'}</strong><div class="spotlight-team">${teamDot(away)}<b>${h(away.name)}</b><small>${m.neutral?'TARAFSIZ SAHA':'DEPLASMAN'}${awayPower!==null?' · GÜÇ '+awayPower.toFixed(1):''}</small></div></div>${played&&m.modelVersion>=2&&Number.isFinite(m.lambdaHome)?`<p class="expectation">Model gol beklentisi <b>${m.lambdaHome.toFixed(2)} – ${m.lambdaAway.toFixed(2)}</b></p>`:''}${matchDetails(m)}${m.extra?`<div class="match-note">Uzatmalar dahil · uzatma: ${m.extra.home}–${m.extra.away}</div>`:''}${m.penalties?`<div class="match-note">Penaltılar: ${m.penalties.home}–${m.penalties.away}</div>`:''}</article>`;
   return `<article class="match"><div class="match-row ${played&&m.hg>m.ag?'winner':''}"><span>${h(home.name)}</span><b>${played?m.hg:'—'}</b></div><div class="match-row ${played&&m.ag>m.hg?'winner':''}"><span>${h(away.name)}</span><b>${played?m.ag:'—'}</b></div>${matchDetails(m)}${m.extra?`<div class="match-note">Uzatmalar dahil · uzatma: ${m.extra.home}–${m.extra.away}</div>`:''}${m.penalties?`<div class="match-note">Penaltılar: ${m.penalties.home}–${m.penalties.away}</div>`:''}</article>`;
 }
 
@@ -177,17 +187,25 @@ function humanResults(){
 function upgradePanel(){
  const t=state.tournament,pending=pendingUpgrades(t),team=pending[0];if(!team)return '';
  const entry=t.upgrades?.[t.stage]?.[team.id],options=upgradeOptions(state,catalogue,team.id),levels=UPGRADE_LEVELS[t.stage];
- return `<section class="panel upgrade-panel"><div class="panel-body"><span class="eyebrow">${STAGES[t.stage]} · KADRO YÜKSELTME</span><h2>${teamDot(team)}${h(team.name)}, bir futbolcunu geliştir.</h2><p class="muted">%50 seviye ${levels[0]}, %50 seviye ${levels[1]}. Aynı mevkiden üç kart açılır; seçtiğin futbolcu kadrodan çıkar. Yeni kartın overall'ı daha yüksek olur; kulüp ve milliyet kimyan değişebilir. Bu tur için tek hak.</p>${entry?.pack?`<p>Yerine gelecek: ${h(team.roster.find(p=>p.id===entry.pack.old)?.name)}</p>${packScreen(entry.pack).replaceAll('data-pick=','data-upgrade-pick=').replaceAll('class="player-card','data-upgrade-team="'+team.id+'" class="player-card')}`:options.length?`<label>Yükseltilecek futbolcu<select id="upgrade-player">${options.map(p=>`<option value="${p.id}">${h(p.name)} · ${POSITIONS[p.position]} · ${p.overall}</option>`).join('')}</select></label><button type="button" class="primary" data-upgrade-open="${team.id}">YÜKSELTME KUTUSUNU AÇ →</button>`:'<p class="muted">Bu iki seviyede de daha yüksek üç kart sunulabilecek futbolcun kalmadı. Mevcut kadronu koruyabilirsin.</p>'}<button type="button" class="secondary" data-upgrade-skip="${team.id}">Bu yükseltmeyi pas geç</button><p class="muted small">${pending.length} katılımcının yükseltme seçimi bekleniyor.</p></div></section>`;
+ const selected=entry?.pack?.old??(options.some(p=>p.id===upgradePlayer)?upgradePlayer:null);
+ return `<section class="panel upgrade-panel"><div class="panel-body"><span class="eyebrow">${STAGES[t.stage]} · KADRO YÜKSELTME</span><h2>${teamDot(team)}${h(team.name)}, sahadan bir futbolcunu seç.</h2><p class="muted">%50 seviye ${levels[0]}, %50 seviye ${levels[1]}. Yeni kart aynı mevkide ve daha yüksek overall olur; kimyan değişebilir.</p><div class="upgrade-layout"><div><div class="pitch-meta"><strong>TÜM KADRON · 11/11</strong><span>4-3-3</span></div>${pitch(team.roster,{upgrade:{eligible:new Set(options.map(p=>p.id)),selected,locked:!!entry?.pack}})}<p class="muted small">Parlak kartlardan yükseltilecek futbolcuyu seç. Soluk kartlar bu iki seviyede de geliştirilemiyor.</p></div><div>${entry?.pack?`<p>Yerine gelecek: <strong>${h(team.roster.find(p=>p.id===entry.pack.old)?.name)}</strong></p>${packScreen(entry.pack).replaceAll('data-pick=','data-upgrade-pick=').replaceAll('class="player-card','data-upgrade-team="'+team.id+'" class="player-card')}`:options.length?`<h3>${selected?h(team.roster.find(p=>p.id===selected)?.name):'Önce sahadan futbolcu seç.'}</h3><button type="button" class="primary" data-upgrade-open="${team.id}" ${selected===null?'disabled':''}>YÜKSELTME KUTUSUNU AÇ →</button>`:'<p class="muted">Bu iki seviyede de daha yüksek üç kart sunulabilecek futbolcun kalmadı. Mevcut kadronu koruyabilirsin.</p>'}<button type="button" class="secondary" data-upgrade-skip="${team.id}">Bu yükseltmeyi pas geç</button><p class="muted small">${pending.length} katılımcının yükseltme seçimi bekleniyor.</p></div></div></div></section>`;
 }
+
 function matchPlanPanel(){
   const t=state.tournament;if(!matchPlanWindow(t)||pendingUpgrades(t).length)return '';
   const pending=pendingMatchPlans(t),locked=t.matchPlans?.[planKey(t)]??{};
   if(!pending.length)return '<p class="stage-note">Maç planları kilitlendi. Maç günü hazır.</p>';
   return `<section class="panel"><div class="panel-body"><span class="eyebrow">MAÇ PLANI · ${STAGES[t.stage]}</span><h2>Tempo ve oyun tarzını seç.</h2><p class="muted">Her maç için yeniden seçilir. Kilitlenen seçimler maç bitince açıklanır. Yüksek tempo daha çok fırsat ve yorgunluk; önde baskı daha çok atak ve arkada boşluk; kontra ise hızlı çıkış sağlar.</p>${Object.keys(locked).length?`<p class="muted small">${Object.keys(locked).length} takım planını kilitledi.</p>`:''}<div class="plan-choices">${pending.map(team=>`<div class="plan-choice team-panel" style="--team-color:${colorHex(team)}"><h3>${teamDot(team)}${h(team.name)}</h3><label>Tempo<select id="plan-tempo-${team.id}">${Object.entries(TEMPOS).map(([key,x])=>`<option value="${key}" ${key==='normal'?'selected':''}>${x.label}</option>`).join('')}</select></label><label>Oyun tarzı<select id="plan-style-${team.id}">${Object.entries(STYLES).map(([key,x])=>`<option value="${key}">${x.label}</option>`).join('')}</select></label><button type="button" class="secondary" data-lock-plan="${team.id}">PLANI KİLİTLE</button></div>`).join('')}</div></div></section>`;
 }
+function liveScreen(){
+ const live=state.tournament.live,matches=live.result.history.at(-1).matches.map(m=>visibleMatch(m,live.minute)),featured=matches.filter(m=>[m.home,m.away].some(id=>id.startsWith('human-'))),others=matches.filter(m=>![m.home,m.away].some(id=>id.startsWith('human-')));
+ return `${stageProgress()}<section class="live-toolbar panel"><div class="panel-body"><span class="eyebrow">${h(live.result.history.at(-1).label)} · CANLI MAÇ GÜNÜ</span><h1>${live.minute>120?'Penaltı serisi':live.minute>90?'Uzatmalar':live.minute===45?'Devre arası':'Sahada rekabet.'}</h1><div class="live-clock" role="timer">${Math.min(live.minute,120)}'${live.minute>120?' + penaltılar':''}</div><p class="muted">${live.paused?'Oyun duraklatıldı.':'Tüm maçlar aynı dakika ilerliyor.'} · ${live.speed}× hız</p><div class="actions"><button type="button" class="secondary" id="live-slower" ${live.speed===LIVE_SPEEDS[0]?'disabled':''}>− Yavaşlat</button><button type="button" class="primary" id="live-toggle">${live.paused?'▶ Devam et':'Ⅱ Duraklat'}</button><button type="button" class="secondary" id="live-faster" ${live.speed===LIVE_SPEEDS.at(-1)?'disabled':''}>Hızlandır +</button></div><progress value="${live.minute}" max="${live.duration}" aria-label="Maç günü ilerlemesi"></progress></div></section><section class="featured-fixtures"><h2 class="section-label">SİZİN SAHANIZ</h2><div class="spotlight-matches">${featured.map(matchCard).join('')||'<p class="muted">Bu turda katılımcı takımı yok.</p>'}</div></section>${others.length?`<h2 class="section-label">DİĞER MAÇLAR</h2><div class="matches">${others.map(matchCard).join('')}</div>`:''}`;
+}
 function cupScreen(){
   const t=state.tournament;
-  return `${stageProgress()}${t.stage==='done'?`<section class="winner-panel"><span class="eyebrow">★ FUT DRAFT KAZANANI</span><h2>${h(teamName(t.gameWinner))}, zafer senin.</h2><p>Avrupa Kupası şampiyonu: <strong>${h(teamName(t.champion))}</strong></p><p>${t.champion===t.gameWinner?'Draft masasından kupaya. Bu sezonun sahibi sensin.':'Katılımcılar arasında en ileri aşama; eşitlikte lig sırası belirledi.'}</p><div class="actions"><button type="button" class="primary" data-new-game>YENİ DRAFT →</button><button type="button" class="secondary" id="copy-result">Sonucu kopyala</button></div></section>`:`<section class="cup-header"><div><span class="eyebrow">✦ AVRUPA KUPASI · 36 TAKIM</span><h1>${STAGES[t.stage]}${t.stage==='league'?` · ${t.week}/8 hafta`:''}</h1>${t.simulationVersion<5?'<span class="badge">Bu kayıt önceki maç modelini kullanıyor</span>':''}<p>${t.stage==='league'?'İlk 8 doğrudan son 16. Sonraki 16 takım play-off.':t.stage==='final'?'Tek maç. Tarafsız saha. Tek kupa.':'Çift maç. Eşitlikte uzatma ve penaltılar.'}</p></div><button type="button" class="primary" id="simulate" ${pendingMatchPlans(t).length||pendingUpgrades(t).length?'disabled':''}>${nextLabel()}</button></section>`}${upgradePanel()}${matchPlanPanel()}${t.season?`<p class="stage-note">${t.season} Şampiyonlar Ligi katılımcılarından, EA kadrosu bulunan 34 kulüp arasındaki en güçlü ${36-state.teams.length} takım. Katılımcı kadrolarıyla toplam 36 takım.</p>`:''}${humanResults()}<div class="tournament-tabs" role="tablist" aria-label="Turnuva görünümü">${[['matches','Maç merkezi'],['table','Puan tablosu'],['bracket','Eleme ağacı'],['squads','Kadrolar']].map(([view,label])=>`<button type="button" role="tab" aria-selected="${cupView===view}" data-cup-view="${view}">${label}</button>`).join('')}</div>${cupView==='matches'?matchesView():cupView==='table'?tableView():cupView==='bracket'?bracketView():cupSquadsView()}`;
+  if(t.live)return liveScreen();
+  if(drawPending(t))return stageProgress()+drawScreen(t,{dot:teamDot,color:colorHex,stageLabel:STAGES[t.stage]});
+  return `${stageProgress()}${t.stage==='done'?`<section class="winner-panel"><span class="eyebrow">★ FUT DRAFT KAZANANI</span><h2>${h(teamName(t.gameWinner))}, zafer senin.</h2><p>Avrupa Kupası şampiyonu: <strong>${h(teamName(t.champion))}</strong></p><p>${t.champion===t.gameWinner?'Draft masasından kupaya. Bu sezonun sahibi sensin.':'Katılımcılar arasında en ileri aşama; eşitlikte lig sırası belirledi.'}</p><div class="actions"><button type="button" class="primary" data-new-game>YENİ DRAFT →</button><button type="button" class="secondary" id="copy-result">Sonucu kopyala</button></div></section>`:`<section class="cup-header"><div><span class="eyebrow">✦ AVRUPA KUPASI · 36 TAKIM</span><h1>${STAGES[t.stage]}${t.stage==='league'?` · ${t.week}/8 hafta`:''}</h1>${t.simulationVersion<6?'<span class="badge">Bu kayıt önceki maç modelini kullanıyor</span>':''}<p>${t.stage==='league'?'İlk 8 doğrudan son 16. Sonraki 16 takım play-off.':t.stage==='final'?'Tek maç. Tarafsız saha. Tek kupa.':'Çift maç. Eşitlikte uzatma ve penaltılar.'}</p></div><button type="button" class="primary" id="simulate" ${pendingMatchPlans(t).length||pendingUpgrades(t).length?'disabled':''}>${nextLabel()}</button></section>`}${upgradePanel()}${matchPlanPanel()}${t.season?`<p class="stage-note">${t.season} Şampiyonlar Ligi katılımcılarından, EA kadrosu bulunan 34 kulüp arasındaki en güçlü ${36-state.teams.length} takım. Katılımcı kadrolarıyla toplam 36 takım.</p>`:''}${humanResults()}<div class="tournament-tabs" role="tablist" aria-label="Turnuva görünümü">${[['matches','Maç merkezi'],['table','Puan tablosu'],['bracket','Eleme ağacı'],['fixtures','Kura & fikstür'],['squads','Kadrolar']].map(([view,label])=>`<button type="button" role="tab" aria-selected="${cupView===view}" data-cup-view="${view}">${label}</button>`).join('')}</div>${cupView==='matches'?matchesView():cupView==='table'?tableView():cupView==='bracket'?bracketView():cupView==='fixtures'?fixtureComparison(t,Infinity,{dot:teamDot,color:colorHex}):cupSquadsView()}`;
 }
 function render(){
   const scroll=window.scrollY;
@@ -220,7 +238,7 @@ document.addEventListener('click',event=>{
   if(b.id==='restart'||b.hasAttribute('data-new-game')){$('#reset-dialog').showModal();return;}
   if(b.id==='confirm-reset'){
     try{localStorage.removeItem(STORAGE_KEY);}catch{storageWorks=false;}
-    reveal.stop();revealedCards=3;packRevealing=false;state=null;corruptSave=false;privateOpen=false;protect=null;target=null;useJoker=false;squadSeat=0;historyIndex=-1;cupView='matches';
+    clearTimeout(presentationTimer);upgradePlayer=null;reveal.stop();revealedCards=3;packRevealing=false;state=null;corruptSave=false;privateOpen=false;protect=null;target=null;useJoker=false;squadSeat=0;historyIndex=-1;cupView='matches';
     $('#reset-dialog').close();render();window.scrollTo({top:0,behavior:'instant'});return;
   }
   if(b.dataset.count){readSetup();participantCount=Number(b.dataset.count);const used=new Set();for(let i=0;i<participantCount;i++){if(used.has(teamColors[i]))teamColors[i]=COLORS.find(c=>!used.has(c.id)).id;used.add(teamColors[i]);}render();return;}
@@ -236,11 +254,14 @@ document.addEventListener('click',event=>{
   if(b.id==='exchange-start'){apply({type:'exchange-start'});return;}
   if(b.dataset.compensation){apply({type:'compensate',id:Number(b.dataset.compensation)});return;}
   if(b.id==='steal-next'){apply({type:'steal-next'});return;}
-  if(b.dataset.upgradeOpen){apply({type:'upgrade-open',team:b.dataset.upgradeOpen,player:Number($('#upgrade-player').value)});return;}
+  if(b.dataset.upgradePlayer){upgradePlayer=Number(b.dataset.upgradePlayer);render();$('[data-upgrade-player="'+upgradePlayer+'"]')?.focus({preventScroll:true});return;}
+  if(b.dataset.upgradeOpen){apply({type:'upgrade-open',team:b.dataset.upgradeOpen,player:upgradePlayer});return;}
   if(b.dataset.upgradePick){apply({type:'upgrade-pick',team:b.dataset.upgradeTeam,id:Number(b.dataset.upgradePick)});return;}
   if(b.dataset.upgradeSkip){apply({type:'upgrade-skip',team:b.dataset.upgradeSkip});return;}
   if(b.dataset.lockPlan){const id=b.dataset.lockPlan;apply({type:'match-plan',team:id,tempo:$('#plan-tempo-'+id).value,style:$('#plan-style-'+id).value});return;}
-  if(b.id==='simulate'){apply({type:'simulate'});return;}
+  if(['draw-next','draw-all','draw-finish','live-toggle'].includes(b.id)){apply({type:b.id});return;}
+  if(b.id==='live-slower'||b.id==='live-faster'){const i=LIVE_SPEEDS.indexOf(state.tournament.live.speed),next=i+(b.id==='live-faster'?1:-1);apply({type:'live-speed',speed:LIVE_SPEEDS[Math.max(0,Math.min(LIVE_SPEEDS.length-1,next))]});return;}
+  if(b.id==='simulate'){apply({type:state.tournament.stage!=='league'&&upcoming()?'live-start':'simulate'});return;}
   if(b.dataset.cupView){cupView=b.dataset.cupView;render();$(`[data-cup-view="${cupView}"]`)?.focus({preventScroll:true});return;}
   if(b.id==='copy-result'){
     const t=state.tournament,text=`Pixel Scout FUT Draft\nOyun kazananı: ${teamName(t.gameWinner)}\nAvrupa Kupası şampiyonu: ${teamName(t.champion)}\n${state.teams.map(team=>`${team.name}: ${STAGES[t.eliminated[team.id]]}`).join('\n')}`;
@@ -257,9 +278,9 @@ async function boot(){
     const response=await fetch('./players.json');if(!response.ok)throw new Error('Oyuncu verisi yüklenemedi.');catalogue=await response.json();
     try{
       const raw=localStorage.getItem(STORAGE_KEY);
-      if(raw){try{const saved=JSON.parse(raw);if(validateSaved(saved,catalogue)){state=migrateSaved(saved);squadSeat=state.phase==='draft'?activeSeat(state):0;historyIndex=state.tournament?state.tournament.history.length-1:-1;}else corruptSave=true;}catch{corruptSave=true;}}
+      if(raw){try{const saved=JSON.parse(raw);if(validateSaved(saved,catalogue)){state=migrateSaved(saved);squadSeat=state.phase==='draft'?activeSeat(state):0;historyIndex=state.tournament?state.tournament.history.length-1:-1;if(state.tournament?.live){state.tournament.live.paused=true;save();}}else corruptSave=true;}catch{corruptSave=true;}}
     }catch{storageWorks=false;}
-    render();
+    render();syncPresentation();
   }catch(error){$('#main').innerHTML='<section class="panel recovery"><h1>Oyuncu tüneli açılamadı.</h1><p>Veri dosyası yüklenemedi. Bağlantını kontrol edip sayfayı yenile.</p><button type="button" id="retry-load" class="primary">Tekrar dene</button></section>';$('#retry-load').addEventListener('click',boot);}
 }
 boot();

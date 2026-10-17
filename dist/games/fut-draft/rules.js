@@ -1,10 +1,13 @@
-import {SIMULATION_VERSION,simulateOpportunities,qualificationRisk,profileForTeam,penaltyProbability} from './simulation-v5.js';
+import {SIMULATION_VERSION,simulateOpportunities,qualificationRisk,profileForTeam,penaltyProbability} from './simulation-v6.js';
+import {simulateOpportunities as simulateV5} from './simulation-v5.js';
+import {createDraw,drawPending} from './draw.js';
+import {LIVE_SPEEDS,playbackDuration} from './live.js';
 import {simulateOpportunities as simulateV4,expectedGoals as expectedV4} from './simulation-v4.js';
 import {UPGRADE_LEVELS,pendingUpgrades,upgradeOptions,upgradePool} from './upgrades.js';
 import {simulateOpportunities as simulateV3} from './simulation-v3.js';
 import {SEASON,SEASON_TEAMS} from './season-data.js';
 import {TEMPOS,STYLES,DEFAULT_PLAN,planKey,matchPlanWindow,pendingMatchPlans,computerPlan} from './match-plans.js';
-export {teamProfile,profileForTeam} from './simulation-v5.js';
+export {teamProfile,profileForTeam} from './simulation-v6.js';
 export const COLORS = [{id:'lime',label:'Yeşil',hex:'#cbf477'},{id:'blue',label:'Mavi',hex:'#78b6ff'},{id:'orange',label:'Turuncu',hex:'#ffb36b'},{id:'purple',label:'Mor',hex:'#c5a1ff'},{id:'pink',label:'Pembe',hex:'#ff94c3'},{id:'red',label:'Kırmızı',hex:'#ff7f79'},{id:'cyan',label:'Turkuaz',hex:'#68d7d1'},{id:'yellow',label:'Sarı',hex:'#f4d76e'}];
 export const POSITIONS = { GK:'Kaleci', DEF:'Defans', MID:'Orta saha', ATT:'Forvet' };
 export const LIMITS = { GK:1, DEF:4, MID:3, ATT:3 };
@@ -62,7 +65,9 @@ function completeSteal(state,catalogue) {
   state.phase='steal-summary';
 }
 export function transition(previous,catalogue,action) {
-  const state=copy(previous);
+  const liveAction=['live-tick','live-toggle','live-speed','live-finish'].includes(action.type);
+  const state=liveAction&&previous.tournament?.live?{...previous,tournament:{...previous.tournament,live:{...previous.tournament.live}}}:copy(previous);
+  if(state.tournament?.live)check(['live-tick','live-toggle','live-speed','live-finish'].includes(action.type),'Önce devam eden maç gününü tamamlayın.');
   if(action.type==='open') {
     check(state.phase==='draft'&&!state.pack,'Bu aşamada kutu açılamaz.');
     const team=state.teams[activeSeat(state)],pos=action.position;
@@ -125,6 +130,25 @@ export function transition(previous,catalogue,action) {
     check(team&&COLORS.some(c=>c.id===action.color)&&!state.teams.some(t=>t.id!==team.id&&t.color===action.color),'Başka katılımcının kullanmadığı bir renk seç.');
     team.color=action.color;
     if(state.tournament)state.tournament.teams.find(t=>t.id===team.id).color=action.color;
+  } else if(action.type==='draw-next'||action.type==='draw-all'||action.type==='draw-finish') {
+    const t=state.tournament;
+    check(state.phase==='tournament'&&drawPending(t),'Devam eden kura yok.');
+    if(action.type==='draw-finish'){check(t.draw.revealed===t.draw.total,'Önce tüm eşleşmeleri açın.');t.draw.done=true;}
+    else t.draw.revealed=action.type==='draw-all'?t.draw.total:Math.min(t.draw.total,t.draw.revealed+1);
+  } else if(action.type==='live-start') {
+    const t=state.tournament,round=t?.bracket.at(-1);
+    check(state.phase==='tournament'&&round&&t.stage!=='league'&&t.stage!=='done'&&round.leg<(t.stage==='final'?1:2),'Canlı oynatılacak maç günü yok.');
+    check(!drawPending(t)&&!pendingUpgrades(t).length&&!pendingMatchPlans(t).length,'Önce kura ve kadro seçimlerini tamamlayın.');
+    const completed=copy(state);advanceTournament(completed);
+    const matches=completed.tournament.history.at(-1).matches;
+    t.live={minute:0,speed:1,paused:false,duration:playbackDuration(matches),result:completed.tournament,rng:completed.rng};
+  } else if(action.type==='live-tick'||action.type==='live-toggle'||action.type==='live-speed'||action.type==='live-finish') {
+    const live=state.tournament?.live;
+    check(state.phase==='tournament'&&live,'Devam eden maç günü yok.');
+    if(action.type==='live-toggle')live.paused=!live.paused;
+    else if(action.type==='live-speed'){check(LIVE_SPEEDS.includes(action.speed),'Geçersiz oynatma hızı.');live.speed=action.speed;}
+    else if(action.type==='live-tick'){check(!live.paused,'Maç duraklatıldı.');live.minute=Math.min(live.duration,live.minute+1);}
+    else {check(live.minute===live.duration,'Maç günü henüz bitmedi.');state.tournament=copy(live.result);state.rng=live.rng;for(const entry of state.tournament.history)for(const m of entry.matches)delete m.frames;}
   } else if(action.type==='upgrade-open') {
     const t=state.tournament;
     check(state.phase==='tournament'&&t&&pendingUpgrades(t)[0]?.id===action.team,'Bu takım yükseltme yapamaz.');
@@ -156,6 +180,7 @@ export function transition(previous,catalogue,action) {
     t.matchPlans[planKey(t)][action.team]={tempo:action.tempo,style:action.style};
   } else if(action.type==='simulate') {
     check(state.phase==='tournament'&&state.tournament.stage!=='done','Simüle edilecek maç kalmadı.');
+    check(!drawPending(state.tournament),'Önce kurayı tamamlayın.');
     check(pendingMatchPlans(state.tournament).length===0,'Sahaya çıkacak katılımcılar maç planını kilitlemeli.');
     check(pendingUpgrades(state.tournament).length===0,'Önce yükseltme seçimlerini tamamlayın veya pas geçin.');
     advanceTournament(state);
@@ -192,8 +217,9 @@ export function computerTeams(catalogue,{legacy=false}={}) {
 
 // The ring has two opponents from each of four pots and exactly 4 home / 4 away.
 // Factor its 8-regular graph into eight perfect matchings (one per matchday).
-export function leagueSchedule(state,teams) {
-  const ranked=[...teams].sort((a,b)=>b.overall-a.overall||a.id.localeCompare(b.id));
+export function leagueSchedule(state,teams,{version=SIMULATION_VERSION}={}) {
+  const strength=t=>version>=6?profileForTeam(t,version).rating:t.overall;
+  const ranked=[...teams].sort((a,b)=>strength(b)-strength(a)||a.id.localeCompare(b.id));
   const pots=Array.from({length:4},(_,i)=>shuffle(state,ranked.slice(i*9,i*9+9)));
   const ring=Array.from({length:36},(_,i)=>pots[i%4][Math.floor(i/4)].id);
   const edges=[];
@@ -229,8 +255,10 @@ export function createTournament(state,catalogue,{version=SIMULATION_VERSION,leg
   const bots=computerTeams(catalogue,{legacy:legacyClubPool}).slice(0,36-humans.length);
   check(bots.length===36-humans.length,'36 takımlık turnuva için yeterli kulüp yok.');
   const teams=[...humans,...bots];
-  const {weeks,pots}=leagueSchedule(state,teams);
-  return {simulationVersion:version,season:legacyClubPool?null:SEASON,matchPlans:{},teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
+  const {weeks,pots}=leagueSchedule(state,teams,{version});
+  const t={simulationVersion:version,season:legacyClubPool?null:SEASON,matchPlans:{},teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
+  if(version>=6){t.initialPowers=Object.fromEntries(teams.map(team=>[team.id,profileForTeam(team,version).rating]));t.draw=createDraw(t,'league');}
+  return t;
 }
 function poisson(state,lambda) {
   const stop=Math.exp(-lambda);let p=1,k=0;
@@ -238,7 +266,7 @@ function poisson(state,lambda) {
   return k-1;
 }
 export function simulateMatch(state,home,away,neutral=false,version=SIMULATION_VERSION,context={}) {
-  if(version>=3)return (version>=5?simulateOpportunities:version===4?simulateV4:simulateV3)(()=>random(state),home,away,neutral,context);
+  if(version>=3)return (version>=6?simulateOpportunities:version===5?simulateV5:version===4?simulateV4:simulateV3)(()=>random(state),home,away,neutral,context);
   const expectation=expectedV4(home,away,neutral,version);
   return {home:home.id,away:away.id,neutral,hg:poisson(state,expectation.lambdaHome),ag:poisson(state,expectation.lambdaAway),...expectation};
 }
@@ -261,6 +289,7 @@ function makeTie(state,tournament,a,b,group=null) {
 function setupRound(state,tournament,stage,ties) {
   tournament.stage=stage;
   tournament.bracket.push({stage,leg:0,ties});
+  if(tournament.simulationVersion>=6)tournament.draw=createDraw(tournament,'knockout');
 }
 function setupPlayoffs(state,t) {
   const rank=standings(t).map(r=>r.id);t.leagueRanking=rank;
@@ -289,9 +318,13 @@ function settleTie(state,t,tie,final) {
     if(last.modelVersion>=3){
       const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
       const first=tie.matches.length>1?tie.matches[0]:null;
-      const extra=(last.modelVersion>=5?simulateOpportunities:last.modelVersion===4?simulateV4:simulateV3)(()=>random(state),home,away,final,{homePlan:last.plans?.home,awayPlan:last.plans?.away,initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
+      const extra=(last.modelVersion>=6?simulateOpportunities:last.modelVersion===5?simulateV5:last.modelVersion===4?simulateV4:simulateV3)(()=>random(state),home,away,final,{homePlan:last.plans?.home,awayPlan:last.plans?.away,initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
       eh=extra.hg;ea=extra.ag;last.lambdaHome+=extra.lambdaHome;last.lambdaAway+=extra.lambdaAway;
       last.events.push(...extra.events);
+      if(last.frames){
+        const fields=['attacks','dangerous','shots','onTarget','saves','goals'];
+        last.frames.push(...extra.frames.map(f=>[f[0],f[1]+last.hg,f[2]+last.ag,Number((f[3]+last.lambdaHome-extra.lambdaHome).toFixed(4)),Number((f[4]+last.lambdaAway-extra.lambdaAway).toFixed(4)),...fields.map((k,i)=>f[5+i]+last.stats.home[k]),...fields.map((k,i)=>f[11+i]+last.stats.away[k])]));
+      }
       for(const side of ['home','away'])for(const key of Object.keys(last.stats[side]))last.stats[side][key]+=extra.stats[side][key];
     }else{eh=poisson(state,last.lambdaHome/3);ea=poisson(state,last.lambdaAway/3);}
     last.extra={home:eh,away:ea};last.hg+=eh;last.ag+=ea;
@@ -299,19 +332,21 @@ function settleTie(state,t,tie,final) {
   }
   if(a!==b)tie.winner=a>b?tie.a:tie.b;
   else{
-    let ph=0,pa=0,kicks=0;
+    let ph=0,pa=0,kicks=0;const kickEvents=[];
+    const kick=(side,round,probability)=>{const scored=random(state)<probability;if(side==='home')ph+=scored?1:0;else pa+=scored?1:0;if(last.modelVersion>=6)kickEvents.push({side,round,scored,home:ph,away:pa});};
     const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
     const hp=last.modelVersion>=4?penaltyProbability(home,away):.76,ap=last.modelVersion>=4?penaltyProbability(away,home):.76;
     // Five kicks each, with early clinches and then paired sudden death.
     for(let i=0;i<5;i++){
-      ph+=random(state)<hp?1:0;
+      kick('home',i+1,hp);
       if(ph>pa+(5-i)||pa>ph+(4-i)){kicks=i+1;break;}
-      pa+=random(state)<ap?1:0;kicks=i+1;
+      kick('away',i+1,ap);kicks=i+1;
       if(Math.abs(ph-pa)>4-i)break;
     }
-    while(ph===pa&&kicks<100){ph+=random(state)<hp?1:0;pa+=random(state)<ap?1:0;kicks++;}
+    while(ph===pa&&kicks<100){kick('home',kicks+1,hp);kick('away',kicks+1,ap);kicks++;}
     if(ph===pa){if(random(state)<.5)ph++;else pa++;}
     last.penalties={home:ph,away:pa};
+    if(last.modelVersion>=6)last.penalties.kicks=kickEvents;
     tie.winner=ph>pa?last.home:last.away;
   }
   tie.aggregate={a,b};
@@ -325,6 +360,7 @@ function advanceTournament(state) {
     const table=standings(t);
     const plans=new Map(table.map(row=>[row.id,qualificationRisk(table,row.id,t.week)]));
     const matches=t.weeks[t.week].map(m=>simulateMatch(state,lookup.get(m.home),lookup.get(m.away),false,t.simulationVersion??1,{home:plans.get(m.home),away:plans.get(m.away)}));
+    for(const m of matches)delete m.frames;
     t.week++;t.history.push({stage:'league',number:t.week,label:`Lig · ${t.week}. hafta`,matches});return;
   }
   const round=t.bracket.at(-1),final=t.stage==='final';
@@ -365,7 +401,10 @@ export function migrateSaved(saved) {
   // Already locked targets keep their original opponents; an untouched round can rotate.
   state.stealOffset??=state.phase==='steal'&&state.cursor===0?state.stealRound+1:1;
   if(state.tournament){
-    if(state.tournament.history.length===0)state.tournament.simulationVersion=SIMULATION_VERSION;
+    if(state.tournament.history.length===0){
+      const t=state.tournament,oldVersion=t.simulationVersion??1;t.simulationVersion=SIMULATION_VERSION;
+      if(oldVersion<6&&t.stage==='league'){const schedule=leagueSchedule(state,t.teams,{version:6});t.weeks=schedule.weeks;t.pots=schedule.pots;t.initialPowers=Object.fromEntries(t.teams.map(team=>[team.id,profileForTeam(team,6).rating]));t.draw=createDraw(t,'league');}
+    }
     else state.tournament.simulationVersion??=1;
   }
   if(state.phase==='draft'&&state.odds.join(',')==='20,30,30,15,5')state.odds=[...ODDS];
@@ -395,6 +434,9 @@ export function validateSaved(state,catalogue) {
     if(state.phase==='steal')check(state.order?.length===state.teams.length&&state.cursor>=0&&state.cursor<state.teams.length&&state.stealSnapshot?.length===state.teams.length,'Gizli seçim kaydı eksik.');
     if(state.phase==='exchange')check(state.moves?.length>state.cursor&&compensationOptions(state).length>0,'Takas kaydı eksik.');
     if(state.phase==='tournament')check(state.tournament?.teams?.length===36&&state.tournament.weeks?.length===8&&Array.isArray(state.tournament.history)&&['league','playoff','r16','quarter','semi','final','done'].includes(state.tournament.stage),'Turnuva kaydı eksik.');
+    const draw=state.tournament?.draw,live=state.tournament?.live;
+    if(draw)check(['league','knockout'].includes(draw.kind)&&Number.isInteger(draw.revealed)&&Number.isInteger(draw.total)&&draw.revealed>=0&&draw.revealed<=draw.total&&draw.total<=40&&typeof draw.done==='boolean','Kura kaydı geçersiz.');
+    if(live)check(Number.isInteger(live.minute)&&live.minute>=0&&live.minute<=live.duration&&live.duration>=90&&live.duration<=400&&LIVE_SPEEDS.includes(live.speed)&&typeof live.paused==='boolean'&&live.result?.teams?.length===36&&live.result?.history?.length===state.tournament.history.length+1&&Number.isInteger(live.rng),'Canlı maç kaydı geçersiz.');
     return true;
   }catch{return false;}
 }

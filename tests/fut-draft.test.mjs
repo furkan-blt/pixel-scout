@@ -1,3 +1,4 @@
+import {drawPending} from '../dist/games/fut-draft/draw.js';
 import {pendingUpgrades} from '../dist/games/fut-draft/upgrades.js';
 import {pendingMatchPlans} from '../dist/games/fut-draft/match-plans.js';
 import test from 'node:test';
@@ -53,6 +54,7 @@ for(const n of [3,4,5])test(`${n} participants: rotating draft, unique XI, one j
   assert.equal(s.stealHistory.length,2);
   let clicks=0;
   while(s.tournament.stage!=='done'){
+    if(drawPending(s.tournament)){s=transition(s,data,{type:'draw-all'});s=transition(s,data,{type:'draw-finish'});}
     for(const t of pendingUpgrades(s.tournament))s=transition(s,data,{type:'upgrade-skip',team:t.id});
     for(const t of pendingMatchPlans(s.tournament))s=transition(s,data,{type:'match-plan',team:t.id,tempo:'normal',style:'balanced'});
     s=transition(s,data,{type:'simulate'});assert.ok(++clicks<30);
