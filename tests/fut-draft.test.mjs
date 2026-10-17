@@ -1,3 +1,4 @@
+import {pendingMatchPlans} from '../dist/games/fut-draft/match-plans.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -51,6 +52,7 @@ for(const n of [3,4,5])test(`${n} participants: rotating draft, unique XI, one j
   assert.equal(s.stealHistory.length,2);
   let clicks=0;
   while(s.tournament.stage!=='done'){
+    for(const t of pendingMatchPlans(s.tournament))s=transition(s,data,{type:'match-plan',team:t.id,tempo:'normal',style:'balanced'});
     s=transition(s,data,{type:'simulate'});assert.ok(++clicks<30);
     assert.ok(validateSaved(JSON.parse(JSON.stringify(s)),data));
   }

@@ -34,7 +34,7 @@ test('power gaps consistently change goal expectations, home advantage is symmet
 });
 test('strong real snapshot squad wins more often than in v1 without a club-name handicap',()=>{
   const data=JSON.parse(fs.readFileSync(new URL('../dist/games/fut-draft/players.json',import.meta.url)));
-  const teams=computerTeams(data),strong=teams.find(t=>t.name==='Paris SG'),weak=teams.find(t=>t.name==='Man Utd');
+  const teams=computerTeams(data,{legacy:true}),strong=teams.find(t=>t.name==='Paris SG'),weak=teams.find(t=>t.name==='Man Utd');
   const outcomes=[];
   for(const version of [1,2]){
     const state={rng:0x9e3779b9};let weakWins=0,strongWins=0;

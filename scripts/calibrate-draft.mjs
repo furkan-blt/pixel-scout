@@ -3,7 +3,7 @@ import {fileURLToPath} from 'node:url';
 import {computerTeams,simulateMatch} from '../dist/games/fut-draft/rules.js';
 import {teamProfile} from '../dist/games/fut-draft/simulation.js';
 const catalogue=JSON.parse(fs.readFileSync(new URL('../dist/games/fut-draft/players.json',import.meta.url)));
-const teams=computerTeams(catalogue),strong=teams.find(t=>t.name==='Paris SG'),underdog=teams.find(t=>t.name==='Man Utd');
+const teams=computerTeams(catalogue,{legacy:true}),strong=teams.find(t=>t.name==='Paris SG'),underdog=teams.find(t=>t.name==='Man Utd');
 const runs=20000;
 const comparisons=[1,2].map(version=>{
   const seed={rng:0x9e3779b9};let wins=0,draws=0,losses=0,homeGoals=0,awayGoals=0;

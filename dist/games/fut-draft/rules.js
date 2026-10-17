@@ -1,5 +1,8 @@
-import {SIMULATION_VERSION,expectedGoals,simulateOpportunities,qualificationRisk} from './simulation-v3.js';
-export {teamProfile,profileForTeam} from './simulation-v3.js';
+import {SIMULATION_VERSION,expectedGoals,simulateOpportunities,qualificationRisk,profileForTeam,penaltyProbability} from './simulation-v4.js';
+import {simulateOpportunities as simulateV3} from './simulation-v3.js';
+import {SEASON,SEASON_TEAMS} from './season-data.js';
+import {TEMPOS,STYLES,DEFAULT_PLAN,planKey,matchPlanWindow,pendingMatchPlans,computerPlan} from './match-plans.js';
+export {teamProfile,profileForTeam} from './simulation-v4.js';
 export const COLORS = [{id:'lime',label:'Yeşil',hex:'#cbf477'},{id:'blue',label:'Mavi',hex:'#78b6ff'},{id:'orange',label:'Turuncu',hex:'#ffb36b'},{id:'purple',label:'Mor',hex:'#c5a1ff'},{id:'pink',label:'Pembe',hex:'#ff94c3'},{id:'red',label:'Kırmızı',hex:'#ff7f79'},{id:'cyan',label:'Turkuaz',hex:'#68d7d1'},{id:'yellow',label:'Sarı',hex:'#f4d76e'}];
 export const POSITIONS = { GK:'Kaleci', DEF:'Defans', MID:'Orta saha', ATT:'Forvet' };
 export const LIMITS = { GK:1, DEF:4, MID:3, ATT:3 };
@@ -120,8 +123,15 @@ export function transition(previous,catalogue,action) {
     check(team&&COLORS.some(c=>c.id===action.color)&&!state.teams.some(t=>t.id!==team.id&&t.color===action.color),'Başka katılımcının kullanmadığı bir renk seç.');
     team.color=action.color;
     if(state.tournament)state.tournament.teams.find(t=>t.id===team.id).color=action.color;
+  } else if(action.type==='match-plan') {
+    const t=state.tournament;
+    check(state.phase==='tournament'&&t&&pendingMatchPlans(t).some(team=>team.id===action.team),'Bu takım şu anda maç planı seçemez.');
+    check(Object.hasOwn(TEMPOS,action.tempo)&&Object.hasOwn(STYLES,action.style),'Geçersiz maç planı.');
+    t.matchPlans??={};t.matchPlans[planKey(t)]??={};
+    t.matchPlans[planKey(t)][action.team]={tempo:action.tempo,style:action.style};
   } else if(action.type==='simulate') {
     check(state.phase==='tournament'&&state.tournament.stage!=='done','Simüle edilecek maç kalmadı.');
+    check(pendingMatchPlans(state.tournament).length===0,'Sahaya çıkacak katılımcılar maç planını kilitlemeli.');
     advanceTournament(state);
   } else throw new Error('Bilinmeyen işlem.');
   return state;
@@ -139,7 +149,7 @@ export function teamStrength(roster) {
   return Object.fromEntries(Object.keys(LIMITS).map(pos=>[pos,mean(roster.filter(p=>p.position===pos).map(p=>p.overall))]));
 }
 const EUROPEAN_LEAGUES = ['Premier League','LALIGA EA SPORTS','Serie A Enilive',"Ligue 1 McDonald's",'Bundesliga','Liga Portugal','Eredivisie','Trendyol Süper Lig','Scottish Prem','Belgium Pro League','Belgian Pro League','1A Pro League','Ö. Bundesliga'];
-export function computerTeams(catalogue) {
+export function legacyComputerTeams(catalogue) {
   const clubs=new Map();
   for(const p of catalogue.players){
     if(!EUROPEAN_LEAGUES.includes(p.league))continue;
@@ -147,6 +157,11 @@ export function computerTeams(catalogue) {
     clubs.get(p.clubId).roster.push(p);
   }
   return [...clubs.values()].map(t=>({...t,roster:Object.entries(LIMITS).flatMap(([pos,n])=>t.roster.filter(p=>p.position===pos).sort((a,b)=>b.overall-a.overall||a.id-b.id).slice(0,n))})).filter(t=>t.roster.length===11).map(t=>({...t,human:false,strength:teamStrength(t.roster),overall:mean(t.roster.map(p=>p.overall))})).sort((a,b)=>b.overall-a.overall||a.name.localeCompare(b.name));
+}
+
+export function computerTeams(catalogue,{legacy=false}={}) {
+  if(legacy)return legacyComputerTeams(catalogue);
+  return copy(SEASON_TEAMS).map(t=>({...t,strength:teamStrength(t.roster),overall:mean(t.roster.map(p=>p.overall))})).sort((a,b)=>b.overall-a.overall||a.name.localeCompare(b.name));
 }
 
 // The ring has two opponents from each of four pots and exactly 4 home / 4 away.
@@ -183,13 +198,13 @@ export function leagueSchedule(state,teams) {
   }
   throw new Error('Fikstür oluşturulamadı. Tekrar dene.');
 }
-export function createTournament(state,catalogue) {
+export function createTournament(state,catalogue,{version=SIMULATION_VERSION,legacyClubPool=false}={}) {
   const humans=state.teams.map(t=>({...copy(t),human:true,strength:teamStrength(t.roster),overall:mean(t.roster.map(p=>p.overall))}));
-  const bots=computerTeams(catalogue).slice(0,36-humans.length);
+  const bots=computerTeams(catalogue,{legacy:legacyClubPool}).slice(0,36-humans.length);
   check(bots.length===36-humans.length,'36 takımlık turnuva için yeterli kulüp yok.');
   const teams=[...humans,...bots];
   const {weeks,pots}=leagueSchedule(state,teams);
-  return {simulationVersion:SIMULATION_VERSION,teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
+  return {simulationVersion:version,season:legacyClubPool?null:SEASON,matchPlans:{},teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
 }
 function poisson(state,lambda) {
   const stop=Math.exp(-lambda);let p=1,k=0;
@@ -197,7 +212,7 @@ function poisson(state,lambda) {
   return k-1;
 }
 export function simulateMatch(state,home,away,neutral=false,version=SIMULATION_VERSION,context={}) {
-  if(version>=3)return simulateOpportunities(()=>random(state),home,away,neutral,context);
+  if(version>=3)return (version>=4?simulateOpportunities:simulateV3)(()=>random(state),home,away,neutral,context);
   const expectation=expectedGoals(home,away,neutral,version);
   return {home:home.id,away:away.id,neutral,hg:poisson(state,expectation.lambdaHome),ag:poisson(state,expectation.lambdaAway),...expectation};
 }
@@ -248,10 +263,10 @@ function settleTie(state,t,tie,final) {
     if(last.modelVersion>=3){
       const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
       const first=tie.matches.length>1?tie.matches[0]:null;
-      const extra=simulateOpportunities(()=>random(state),home,away,final,{initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
+      const extra=(last.modelVersion>=4?simulateOpportunities:simulateV3)(()=>random(state),home,away,final,{homePlan:last.plans?.home,awayPlan:last.plans?.away,initialHome:last.hg,initialAway:last.ag,aggregateHome:first?(first.home===home.id?first.hg:first.ag):0,aggregateAway:first?(first.home===away.id?first.hg:first.ag):0},30,90);
       eh=extra.hg;ea=extra.ag;last.lambdaHome+=extra.lambdaHome;last.lambdaAway+=extra.lambdaAway;
       last.events.push(...extra.events);
-      for(const side of ['home','away'])for(const key of ['attacks','dangerous','shots','goals'])last.stats[side][key]+=extra.stats[side][key];
+      for(const side of ['home','away'])for(const key of Object.keys(last.stats[side]))last.stats[side][key]+=extra.stats[side][key];
     }else{eh=poisson(state,last.lambdaHome/3);ea=poisson(state,last.lambdaAway/3);}
     last.extra={home:eh,away:ea};last.hg+=eh;last.ag+=ea;
     a+=last.home===tie.a?eh:ea;b+=last.home===tie.b?eh:ea;
@@ -259,14 +274,16 @@ function settleTie(state,t,tie,final) {
   if(a!==b)tie.winner=a>b?tie.a:tie.b;
   else{
     let ph=0,pa=0,kicks=0;
+    const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
+    const hp=last.modelVersion>=4?penaltyProbability(home,away):.76,ap=last.modelVersion>=4?penaltyProbability(away,home):.76;
     // Five kicks each, with early clinches and then paired sudden death.
     for(let i=0;i<5;i++){
-      ph+=random(state)<.76?1:0;
+      ph+=random(state)<hp?1:0;
       if(ph>pa+(5-i)||pa>ph+(4-i)){kicks=i+1;break;}
-      pa+=random(state)<.76?1:0;kicks=i+1;
+      pa+=random(state)<ap?1:0;kicks=i+1;
       if(Math.abs(ph-pa)>4-i)break;
     }
-    while(ph===pa&&kicks<100){ph+=random(state)<.76?1:0;pa+=random(state)<.76?1:0;kicks++;}
+    while(ph===pa&&kicks<100){ph+=random(state)<hp?1:0;pa+=random(state)<ap?1:0;kicks++;}
     if(ph===pa){if(random(state)<.5)ph++;else pa++;}
     last.penalties={home:ph,away:pa};
     tie.winner=ph>pa?last.home:last.away;
@@ -296,6 +313,11 @@ function advanceTournament(state) {
     const [h,a]=final||leg===2?[tie.a,tie.b]:[tie.b,tie.a];
     const first=leg===2?tie.matches[0]:null;
     const context={aggregateHome:first?(first.home===h?first.hg:first.ag):0,aggregateAway:first?(first.home===a?first.hg:first.ag):0};
+    if(matchPlanWindow(t)){
+      const choices=t.matchPlans?.[planKey(t)]??{};
+      const planFor=(id,other)=>lookup.get(id).human?(choices[id]??DEFAULT_PLAN):computerPlan(profileForTeam(lookup.get(id)),profileForTeam(lookup.get(other)));
+      context.homePlan=planFor(h,a);context.awayPlan=planFor(a,h);
+    }
     const match=simulateMatch(state,lookup.get(h),lookup.get(a),final,t.simulationVersion??1,context);tie.matches.push(match);
     if(final||leg===2)settleTie(state,t,tie,final);
     matches.push(copy(match));

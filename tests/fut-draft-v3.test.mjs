@@ -11,7 +11,7 @@ const data=JSON.parse(fs.readFileSync(new URL('../dist/games/fut-draft/players.j
 function cup(seed=77){
   const state=createGame(['A','B','C'],undefined,seed),used=new Set();
   for(const t of state.teams)for(const [pos,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===pos&&!used.has(p.id)).slice(0,n)){used.add(p.id);t.roster.push(p);}
-  state.picks=33;state.phase='tournament';state.tournament=createTournament(state,data);return state;
+  state.picks=33;state.phase='tournament';state.tournament=createTournament(state,data,{version:3,legacyClubPool:true});return state;
 }
 test('v3 club bonus belongs only to human teams; nation chemistry applies to both',()=>{
   const human=profileForTeam(team('h',true)),bot=profileForTeam(team('b'));
@@ -60,7 +60,7 @@ test('opportunity simulation has bounded shared tempo, consistent stages, goals 
   const rng={rng:56789};const h=team('h',true,86),a=team('a',false,81);
   let wins=0,losses=0,draws=0,goals=0,big=0;
   for(let i=0;i<3000;i++){
-    const m=simulateMatch(rng,h,a,true);assert.equal(m.modelVersion,3);assert.ok(m.tempo>=.84&&m.tempo<=1.16);
+    const m=simulateMatch(rng,h,a,true,3);assert.equal(m.modelVersion,3);assert.ok(m.tempo>=.84&&m.tempo<=1.16);
     for(const side of ['home','away']){const s=m.stats[side];assert.ok(s.attacks>=s.dangerous&&s.dangerous>=s.shots&&s.shots>=s.goals);assert.equal(s.goals,side==='home'?m.hg:m.ag);}
     assert.equal(m.events.length,m.hg+m.ag);assert.ok(m.events.every(e=>e.minute>=1&&e.minute<=90));assert.ok(m.lambdaHome>0&&m.lambdaAway>0);
     if(m.hg>m.ag)wins++;else if(m.hg<m.ag)losses++;else draws++;
@@ -92,7 +92,7 @@ test('full event-model cup keeps extra time, stats, winners and save migration c
   }
   assert.ok(sawExtra);
   const old=cup();old.tournament.simulationVersion=2;old.tournament.history=[{stage:'league',matches:[]}];assert.equal(migrateSaved(old).tournament.simulationVersion,2);
-  old.tournament.history=[];assert.equal(migrateSaved(old).tournament.simulationVersion,3);
+  old.tournament.history=[];assert.equal(migrateSaved(old).tournament.simulationVersion,4);
   const oldDraft=createGame(['A','B','C'],[20,30,30,15,5]);assert.deepEqual(migrateSaved(oldDraft).odds,[20,40,25,10,5]);
   oldDraft.odds=[10,20,30,20,20];assert.deepEqual(migrateSaved(oldDraft).odds,oldDraft.odds);assert.deepEqual(ODDS,[20,40,25,10,5]);
 });
