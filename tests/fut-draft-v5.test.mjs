@@ -18,7 +18,7 @@ test('v5 same matchup has fewer unexpected defeats than v4 while still allowing 
  const h=synthetic('h',85),a=synthetic('a',81);const counts=[];for(const version of [4,5]){const rng={rng:1234567};let losses=0,wins=0,draws=0;for(let i=0;i<3000;i++){const m=simulateMatch(rng,h,a,true,version);losses+=m.hg<m.ag;wins+=m.hg>m.ag;draws+=m.hg===m.ag;}counts.push({losses,wins,draws});}assert.ok(counts[1].losses<counts[0].losses/3);assert.ok(counts[1].wins>counts[0].wins);assert.ok(counts[1].draws>0);
 });
 for(const stage of ['r16','quarter','semi'])test(`${stage} reward uses its exact two levels, swaps one better same-position player and persists`,()=>{
- let s=cup(stage);assert.deepEqual(UPGRADE_LEVELS[stage],stage==='quarter'?[2,3]:[1,2]);const team=pendingUpgrades(s.tournament)[0];const old=upgradeOptions(s,data,team.id)[0];const before=s.teams.find(t=>t.id===team.id).roster;
+ let s=cup(stage);assert.deepEqual(UPGRADE_LEVELS[stage],[1,2]);const team=pendingUpgrades(s.tournament)[0];const old=upgradeOptions(s,data,team.id)[0];const before=s.teams.find(t=>t.id===team.id).roster;
  assert.throws(()=>transition(s,data,{type:'simulate'}),/yükseltme|kilitlemeli/);
  assert.throws(()=>transition(s,data,{type:'upgrade-open',team:'human-1',player:old.id}));
  s=transition(s,data,{type:'upgrade-open',team:team.id,player:old.id});const pack=s.tournament.upgrades[stage][team.id].pack;assert.equal(pack.options.length,3);assert.ok(UPGRADE_LEVELS[stage].includes(pack.level));assert.ok(pack.options.every(p=>p.position===old.position&&p.overall>old.overall));
@@ -32,7 +32,7 @@ for(const stage of ['r16','quarter','semi'])test(`${stage} reward uses its exact
 test('reward levels remain a fair coin; capped squads can skip and no final/legacy rewards exist',()=>{
  const levels={1:0,2:0};for(let seed=1;seed<=300;seed++){let s=cup('r16',seed*74591);const t=pendingUpgrades(s.tournament)[0],p=upgradeOptions(s,data,t.id)[0];s=transition(s,data,{type:'upgrade-open',team:t.id,player:p.id});levels[s.tournament.upgrades.r16[t.id].pack.level]++;}assert.ok(levels[1]>110&&levels[1]<190);
  const s=cup('final');assert.equal(pendingUpgrades(s.tournament).length,0);s.tournament.stage='r16';s.tournament.simulationVersion=4;assert.equal(pendingUpgrades(s.tournament).length,0);
- const full=cup();full.teams[0].roster=full.teams[0].roster.map(p=>({...p,overall:99}));assert.equal(upgradeOptions(full,data,'human-0').length,0);assert.doesNotThrow(()=>transition(full,data,{type:'upgrade-skip',team:'human-0'}));
+ const full=cup();full.teams[0].roster=full.teams[0].roster.map(p=>({...p,overall:99}));assert.equal(upgradeOptions(full,data,'human-0').length,11);assert.doesNotThrow(()=>transition(full,data,{type:'upgrade-skip',team:'human-0'}));
 });
 test('scorer selection uses a current XI member and favors forwards without inventing identities',()=>{
  const t=synthetic('h',82);assert.equal(selectScorer(()=>0,t).playerId,t.roster[0].id);assert.equal(selectScorer(()=>.999999,t).playerId,t.roster.at(-1).id);assert.ok(profileForTeam(t).rating>0);

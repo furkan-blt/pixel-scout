@@ -18,7 +18,7 @@ const cups=[];
 for(const version of [4,5]){
  let rankError=0,rho=0,matches=0,goals=0,threeMargins=0,upgrades=0;const champions={};
  for(let i=0;i<100;i++){
-  let s=structuredClone(base);s.rng=((0x9e3779b9^Math.imul(i+1,2654435761))>>>0)||1;s.phase='tournament';s.tournament=createTournament(s,data,{version});
+  let s=structuredClone(base);s.rng=((0x9e3779b9^Math.imul(i+1,2654435761))>>>0)||1;s.phase='tournament';s.tournament=createTournament(s,data,{version,upgradePolicy:1});
   const ranking=[...s.tournament.teams].sort((a,b)=>profileForTeam(b,version).rating-profileForTeam(a,version).rating||a.id.localeCompare(b.id)).map(t=>t.id);
   while(s.tournament.stage!=='done'){
    for(const t of pendingUpgrades(s.tournament)){const options=upgradeOptions(s,data,t.id);if(!options.length){s=transition(s,data,{type:'upgrade-skip',team:t.id});continue;}const old=[...options].sort((a,b)=>a.overall-b.overall)[0];s=transition(s,data,{type:'upgrade-open',team:t.id,player:old.id});const pack=s.tournament.upgrades[s.tournament.stage][t.id].pack;s=transition(s,data,{type:'upgrade-pick',team:t.id,id:[...pack.options].sort((a,b)=>b.overall-a.overall)[0].id});upgrades++;}

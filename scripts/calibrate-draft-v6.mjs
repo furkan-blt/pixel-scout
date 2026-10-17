@@ -19,7 +19,7 @@ const cups=[];
 for(const version of [5,6]){
  let rankError=0,rho=0,matches=0,goals=0,threeMargins=0,upgrades=0;const champions={};
  for(let i=0;i<30;i++){
-  let s=structuredClone(base);s.rng=((0x9e3779b9^Math.imul(i+1,2654435761))>>>0)||1;s.phase='tournament';s.tournament=createTournament(s,data,{version});
+  let s=structuredClone(base);s.rng=((0x9e3779b9^Math.imul(i+1,2654435761))>>>0)||1;s.phase='tournament';s.tournament=createTournament(s,data,{version,upgradePolicy:1});
   const ranking=[...s.tournament.teams].sort((a,b)=>profileForTeam(b,version).rating-profileForTeam(a,version).rating||a.id.localeCompare(b.id)).map(t=>t.id);
   while(s.tournament.stage!=='done'){
    if(drawPending(s.tournament)){s=transition(s,data,{type:'draw-all'});s=transition(s,data,{type:'draw-finish'});}

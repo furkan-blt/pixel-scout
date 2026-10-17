@@ -1,5 +1,7 @@
 # FUT Draft sunum ve maç modeli 6
 
+Güncel yükseltme/kontrol kuralları: [kontrol düzeltmeleri](FUT_DRAFT_CONTROLS.md). Aşağıdaki ilk sürüm sunum notlarının yerine, tüm aşamalarda 1/2 seviye kutusu, 11 futbolcu seçimi, sabit araç çubuğu, sıralı lig sonuçları ve penaltı odağı uygulanır.
+
 Bu sürüm lig kurasını, eleme kurasını, dakika akışını ve sahadan yükseltme seçimini ekler. Model 1–5 ile maçı başlamış kayıtlar kendi sonucunu üretmeye devam eder. Maç yapılmamış kayıtlar 6'ya yükselir; bu durumda güç torbaları ve dengeli fikstür yeniden hazırlanır. Bitmiş skorlar değişmez. Yeni modelin tamamını görmek için yeni draft başlatılır.
 
 ## Güç torbaları ve kura

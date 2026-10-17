@@ -23,11 +23,12 @@ async function environment(saved=null,brokenStorage=false){
   await import(`../dist/games/fut-draft/app.js?smoke=${++bootId}`);
   await new Promise(resolve=>setImmediate(resolve));
   return {
-    html:()=>node('#main').innerHTML,
+    html:()=>node('#main').innerHTML.replace(/<!--live-content-start-->[\s\S]*?<!--live-content-end-->/,original=>node('#live-content').innerHTML||original),
     state:()=>JSON.parse(storage.get(STORAGE_KEY)),
     submit:()=>listeners.get('submit')({target:{id:'setup-form'},preventDefault(){}}),
     click:(id='',dataset={})=>listeners.get('click')({target:{closest:()=>({id,dataset,disabled:false,hasAttribute:attr=>attr==='data-new-game'&&dataset.newGame!==undefined})}}),
     change:(id,value)=>listeners.get('change')({target:{id,value}}),
+    input:(id,value)=>listeners.get('input')({target:{id,value}}),
     advance:ms=>{const end=now+ms;let count=0;while(timers.size){const [id,timer]=[...timers].sort((a,b)=>a[1].at-b[1].at)[0];if(timer.at>end)break;assert.ok(++count<10000);timers.delete(id);now=timer.at;timer.fn();}now=end;},
     node,
   };
@@ -65,7 +66,7 @@ test('UI event flow reaches cup, hides locked choices and resumes behind handoff
     ui.click('steal-next');s=ui.state();
   }
   assert.equal(s.phase,'tournament');assert.match(ui.html(),/KURA GECESİ/);ui.click('draw-all');ui.click('draw-finish');assert.match(ui.html(),/1\. HAFTAYI SİMÜLE ET/);
-  ui.click('simulate');s=ui.state();assert.equal(s.tournament.week,1);assert.match(ui.html(),/Lig · 1\. hafta/);
+  ui.click('simulate');ui.advance(200000);s=ui.state();assert.equal(s.tournament.week,1);assert.match(ui.html(),/Lig · 1\. hafta/);
   assert.match(ui.html(),/Maçın akışı ve pozisyonlar/);assert.match(ui.html(),/Tehlikeli fırsat/);
   ui=await environment(s);assert.match(ui.html(),/2\. HAFTAYI SİMÜLE ET/);
   ui.click('',{cupView:'table'});assert.match(ui.html(),/<table>/);assert.match(ui.html(),/UI 1/);
@@ -147,4 +148,32 @@ test('live UI has one shared minute, pauses and changes speed, reloads paused, a
  let ui=await environment(s);ui.click('simulate');s=ui.state();assert.equal(s.tournament.live.minute,0);assert.match(ui.html(),/CANLI MAÇ GÜNÜ/);const future=s.tournament.live.result.history.at(-1).matches[0].events[0];assert.ok(future);assert.ok(!ui.html().includes(future.playerName));
  ui.advance(2000);assert.equal(ui.state().tournament.live.minute,10);ui.click('live-toggle');ui.advance(5000);assert.equal(ui.state().tournament.live.minute,10);ui.click('live-faster');assert.equal(ui.state().tournament.live.speed,2);ui.click('live-toggle');ui.advance(400);assert.equal(ui.state().tournament.live.minute,14);
  ui=await environment(ui.state());assert.equal(ui.state().tournament.live.paused,true);ui.advance(3000);assert.equal(ui.state().tournament.live.minute,14);ui.click('live-toggle');ui.advance(200000);assert.equal(ui.state().tournament.live,undefined);assert.equal(ui.state().tournament.bracket.at(-1).leg,1);
+});
+
+async function playbackFixture(stage='league'){
+ const {createGame,createTournament}=await import('../dist/games/fut-draft/rules.js');const s=createGame(['Playback A','Playback B','Playback C'],undefined,4371),used=new Set();
+ for(const team of s.teams)for(const [position,n] of Object.entries(LIMITS))for(const p of data.players.filter(p=>p.position===position&&!used.has(p.id)).slice(0,n)){team.roster.push(p);used.add(p.id);}
+ s.picks=33;s.phase='tournament';s.tournament=createTournament(s,data);const t=s.tournament;t.draw.done=true;t.draw.revealed=t.draw.total;
+ if(stage!=='league'){t.stage=stage;t.history=[{stage:'league',matches:[],label:'Lig',number:1}];t.leagueRanking=t.teams.map(t=>t.id);t.bracket=[{stage,leg:0,ties:[{a:t.teams[0].id,b:t.teams[3].id,matches:[]}]}];}
+ return s;
+}
+test('live controls remain mounted across ticks; one click and one slider input change speed and instant finishes',async()=>{
+ const ui=await environment(await playbackFixture('playoff'));ui.click('simulate');const toolbar=ui.node('#main').innerHTML;
+ ui.advance(400);assert.equal(ui.node('#main').innerHTML,toolbar);assert.equal(ui.state().tournament.live.minute,2);
+ ui.click('live-faster');assert.equal(ui.state().tournament.live.speed,2);assert.equal(ui.node('#main').innerHTML,toolbar);ui.advance(100);assert.equal(ui.state().tournament.live.minute,3);
+ ui.input('live-speed','4');assert.equal(ui.state().tournament.live.speed,8);assert.equal(ui.node('#live-speed-label').textContent,'8× hız');ui.advance(25);assert.equal(ui.state().tournament.live.minute,4);
+ ui.click('live-slower');assert.equal(ui.state().tournament.live.speed,4);ui.click('live-instant');assert.equal(ui.state().tournament.live,undefined);assert.equal(ui.state().tournament.bracket.at(-1).leg,1);
+});
+test('league results reveal one at a time and the instant button reveals the saved remaining results',async()=>{
+ const ui=await environment(await playbackFixture());ui.click('simulate');assert.equal(ui.state().tournament.live.mode,'league');assert.match(ui.html(),/İLK SONUÇ BEKLENİYOR/);assert.equal(ui.state().tournament.week,0);
+ ui.advance(649);assert.equal(ui.state().tournament.live.minute,0);ui.advance(1);assert.equal(ui.state().tournament.live.minute,1);assert.match(ui.html(),/YENİ AÇILAN SONUÇ · 1\/18/);ui.advance(650);assert.equal(ui.state().tournament.live.minute,2);assert.equal(ui.state().tournament.history.length,0);assert.doesNotMatch(ui.html(),/YENİ AÇILAN SONUÇ · 18/);
+ ui.click('live-instant');assert.equal(ui.state().tournament.week,1);assert.equal(ui.state().tournament.history[0].matches.length,18);
+});
+test('a user penalty shootout takes full focus and reveals a single kick each 1.8 seconds even at 8x',async()=>{
+ const s=await playbackFixture('final'),t=s.tournament,home=t.teams[0],away=t.teams[3],kicks=[];let ph=0,pa=0;for(const [i,scored] of [true,true,true,true,false,true,true,false,true,false].entries()){if(i%2===0)ph+=scored?1:0;else pa+=scored?1:0;kicks.push({side:i%2===0?'home':'away',round:Math.floor(i/2)+1,scored,home:ph,away:pa});}
+ const m={home:home.id,away:away.id,hg:1,ag:1,modelVersion:6,extra:{home:0,away:0},penalties:{home:4,away:3,kicks},events:[{minute:20,team:home.id,playerName:home.roster[10].name},{minute:50,team:away.id,playerName:away.roster[10].name}]};
+ const result=structuredClone(t);result.history.push({stage:'final',number:1,label:'Final',matches:[m]});result.stage='done';result.champion=home.id;result.gameWinner=home.id;result.eliminated[home.id]='champion';result.eliminated[away.id]='final';t.live={mode:'knockout',minute:119,speed:8,paused:false,duration:132,result,rng:s.rng};
+ const ui=await environment(s);ui.click('live-toggle');ui.advance(25);assert.equal(ui.state().tournament.live.minute,120);assert.match(ui.html(),/PENALTI ODAĞI/);assert.doesNotMatch(ui.html(),/DİĞER MAÇLAR/);assert.match(ui.html(),/İlk vuruş bekleniyor/);assert.equal(ui.node('#live-faster').disabled,true);
+ ui.advance(1799);assert.equal(ui.state().tournament.live.minute,120);ui.advance(1);assert.equal(ui.state().tournament.live.minute,121);assert.match(ui.html(),/1\. vuruş · ⚽ GOL/);assert.doesNotMatch(ui.html(),/penaltılarla kazandı/);
+ ui.click('live-toggle');ui.advance(5000);assert.equal(ui.state().tournament.live.minute,121);ui.click('live-toggle');ui.advance(200000);assert.equal(ui.state().tournament.live,undefined);assert.equal(ui.state().tournament.champion,home.id);
 });

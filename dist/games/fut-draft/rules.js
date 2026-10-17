@@ -1,9 +1,9 @@
 import {SIMULATION_VERSION,simulateOpportunities,qualificationRisk,profileForTeam,penaltyProbability} from './simulation-v6.js';
 import {simulateOpportunities as simulateV5} from './simulation-v5.js';
 import {createDraw,drawPending} from './draw.js';
-import {LIVE_SPEEDS,playbackDuration} from './live.js';
+import {LIVE_SPEEDS,playbackDuration,penaltySequenceEnd} from './live.js';
 import {simulateOpportunities as simulateV4,expectedGoals as expectedV4} from './simulation-v4.js';
-import {UPGRADE_LEVELS,pendingUpgrades,upgradeOptions,upgradePool} from './upgrades.js';
+import {upgradeLevels,pendingUpgrades,upgradeOptions,upgradePool} from './upgrades.js';
 import {simulateOpportunities as simulateV3} from './simulation-v3.js';
 import {SEASON,SEASON_TEAMS} from './season-data.js';
 import {TEMPOS,STYLES,DEFAULT_PLAN,planKey,matchPlanWindow,pendingMatchPlans,computerPlan} from './match-plans.js';
@@ -65,9 +65,9 @@ function completeSteal(state,catalogue) {
   state.phase='steal-summary';
 }
 export function transition(previous,catalogue,action) {
-  const liveAction=['live-tick','live-toggle','live-speed','live-finish'].includes(action.type);
+  const liveAction=['live-tick','live-toggle','live-speed','live-finish','live-instant'].includes(action.type);
   const state=liveAction&&previous.tournament?.live?{...previous,tournament:{...previous.tournament,live:{...previous.tournament.live}}}:copy(previous);
-  if(state.tournament?.live)check(['live-tick','live-toggle','live-speed','live-finish'].includes(action.type),'Önce devam eden maç gününü tamamlayın.');
+  if(state.tournament?.live)check(liveAction,'Önce devam eden maç gününü tamamlayın.');
   if(action.type==='open') {
     check(state.phase==='draft'&&!state.pack,'Bu aşamada kutu açılamaz.');
     const team=state.teams[activeSeat(state)],pos=action.position;
@@ -137,33 +137,41 @@ export function transition(previous,catalogue,action) {
     else t.draw.revealed=action.type==='draw-all'?t.draw.total:Math.min(t.draw.total,t.draw.revealed+1);
   } else if(action.type==='live-start') {
     const t=state.tournament,round=t?.bracket.at(-1);
-    check(state.phase==='tournament'&&round&&t.stage!=='league'&&t.stage!=='done'&&round.leg<(t.stage==='final'?1:2),'Canlı oynatılacak maç günü yok.');
+    const league=t?.stage==='league';
+    check(state.phase==='tournament'&&(league?t.week<8:round&&t.stage!=='done'&&round.leg<(t.stage==='final'?1:2)),'Canlı oynatılacak maç günü yok.');
     check(!drawPending(t)&&!pendingUpgrades(t).length&&!pendingMatchPlans(t).length,'Önce kura ve kadro seçimlerini tamamlayın.');
     const completed=copy(state);advanceTournament(completed);
     const matches=completed.tournament.history.at(-1).matches;
-    t.live={minute:0,speed:1,paused:false,duration:playbackDuration(matches),result:completed.tournament,rng:completed.rng};
-  } else if(action.type==='live-tick'||action.type==='live-toggle'||action.type==='live-speed'||action.type==='live-finish') {
+    t.live={mode:league?'league':'knockout',minute:0,speed:1,paused:false,duration:league?matches.length:playbackDuration(matches,t.teams.filter(team=>team.human).map(team=>team.id)),result:completed.tournament,rng:completed.rng};
+  } else if(liveAction) {
     const live=state.tournament?.live;
     check(state.phase==='tournament'&&live,'Devam eden maç günü yok.');
     if(action.type==='live-toggle')live.paused=!live.paused;
     else if(action.type==='live-speed'){check(LIVE_SPEEDS.includes(action.speed),'Geçersiz oynatma hızı.');live.speed=action.speed;}
     else if(action.type==='live-tick'){check(!live.paused,'Maç duraklatıldı.');live.minute=Math.min(live.duration,live.minute+1);}
-    else {check(live.minute===live.duration,'Maç günü henüz bitmedi.');state.tournament=copy(live.result);state.rng=live.rng;for(const entry of state.tournament.history)for(const m of entry.matches)delete m.frames;}
+    else if(action.type==='live-instant'){
+      const penaltyEnd=live.mode==='league'?0:penaltySequenceEnd(live.result.history.at(-1).matches,state.tournament.teams.filter(t=>t.human).map(t=>t.id));
+      if(penaltyEnd&&live.minute<penaltyEnd){live.minute=Math.max(live.minute,120);live.paused=false;}
+      else commitLive(state,live);
+    }
+    else {check(live.minute===live.duration,'Maç günü henüz bitmedi.');commitLive(state,live);}
   } else if(action.type==='upgrade-open') {
     const t=state.tournament;
     check(state.phase==='tournament'&&t&&pendingUpgrades(t)[0]?.id===action.team,'Bu takım yükseltme yapamaz.');
     check(!t.upgrades?.[t.stage]?.[action.team]?.pack,'Yükseltme kutusu zaten açık.');
-    check(upgradeOptions(state,catalogue,action.team).some(p=>p.id===action.player),'Bu futbolcu için iki seviyede de daha yüksek üç kart bulunmuyor.');
-    const levels=UPGRADE_LEVELS[t.stage],level=levels[Math.floor(random(state)*2)];
+    check(upgradeOptions(state,catalogue,action.team).some(p=>p.id===action.player),'Kadrondan bir futbolcu seçin.');
+    const levels=upgradeLevels(t),level=levels[Math.floor(random(state)*2)];
     const options=shuffle(state,upgradePool(state,catalogue,action.team,action.player,level)).slice(0,3);
+    check(options.length===3,'Bu mevkide üç farklı kart için yeterli oyuncu kalmadı.');
     t.upgrades??={};t.upgrades[t.stage]??={};t.upgrades[t.stage][action.team]={pack:{old:action.player,level,options},done:false};
   } else if(action.type==='upgrade-pick') {
     const t=state.tournament,entry=t?.upgrades?.[t.stage]?.[action.team];
     check(state.phase==='tournament'&&pendingUpgrades(t)[0]?.id===action.team&&entry?.pack,'Yükseltme kutusu açık değil.');
     const picked=entry.pack.options.find(p=>p.id===action.id);
-    check(picked&&!state.teams.some(team=>team.roster.some(p=>p.id===picked.id)),'Geçersiz veya başka katılımcı tarafından seçilmiş kart.');
+    check(picked&&(picked.id===entry.pack.old||!state.teams.some(team=>team.roster.some(p=>p.id===picked.id))),'Geçersiz veya başka katılımcı tarafından seçilmiş kart.');
     const team=state.teams.find(team=>team.id===action.team),old=team.roster.find(p=>p.id===entry.pack.old);
-    check(old&&picked.position===old.position&&picked.overall>old.overall,'Yükseltme aynı mevkide ve daha yüksek overall olmalı.');
+    check(old&&picked.position===old.position,'Yeni kart aynı mevkide olmalı.');
+    if(t.upgradePolicy===1)check(picked.overall>old.overall,'Eski deneyde overall yükselmeli.');
     team.roster[team.roster.findIndex(p=>p.id===old.id)]=copy(picked);
     const cupTeam=t.teams.find(x=>x.id===team.id);cupTeam.roster=copy(team.roster);cupTeam.strength=teamStrength(team.roster);cupTeam.overall=mean(team.roster.map(p=>p.overall));
     t.upgrades[t.stage][action.team]={done:true,old:old.id,player:picked.id,level:entry.pack.level};
@@ -186,6 +194,10 @@ export function transition(previous,catalogue,action) {
     advanceTournament(state);
   } else throw new Error('Bilinmeyen işlem.');
   return state;
+}
+function commitLive(state,live){
+  state.tournament=copy(live.result);state.rng=live.rng;
+  for(const entry of state.tournament.history)for(const m of entry.matches)delete m.frames;
 }
 export function assertSquads(teams) {
   const ids=new Set();
@@ -250,13 +262,13 @@ export function leagueSchedule(state,teams,{version=SIMULATION_VERSION}={}) {
   }
   throw new Error('Fikstür oluşturulamadı. Tekrar dene.');
 }
-export function createTournament(state,catalogue,{version=SIMULATION_VERSION,legacyClubPool=false}={}) {
+export function createTournament(state,catalogue,{version=SIMULATION_VERSION,legacyClubPool=false,upgradePolicy=2}={}) {
   const humans=state.teams.map(t=>({...copy(t),human:true,strength:teamStrength(t.roster),overall:mean(t.roster.map(p=>p.overall))}));
   const bots=computerTeams(catalogue,{legacy:legacyClubPool}).slice(0,36-humans.length);
   check(bots.length===36-humans.length,'36 takımlık turnuva için yeterli kulüp yok.');
   const teams=[...humans,...bots];
   const {weeks,pots}=leagueSchedule(state,teams,{version});
-  const t={simulationVersion:version,season:legacyClubPool?null:SEASON,matchPlans:{},teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
+  const t={simulationVersion:version,upgradePolicy,season:legacyClubPool?null:SEASON,matchPlans:{},teams,weeks,pots,stage:'league',week:0,history:[],bracket:[],eliminated:{},leagueRanking:[],champion:null,gameWinner:null};
   if(version>=6){t.initialPowers=Object.fromEntries(teams.map(team=>[team.id,profileForTeam(team,version).rating]));t.draw=createDraw(t,'league');}
   return t;
 }
@@ -333,7 +345,7 @@ function settleTie(state,t,tie,final) {
   if(a!==b)tie.winner=a>b?tie.a:tie.b;
   else{
     let ph=0,pa=0,kicks=0;const kickEvents=[];
-    const kick=(side,round,probability)=>{const scored=random(state)<probability;if(side==='home')ph+=scored?1:0;else pa+=scored?1:0;if(last.modelVersion>=6)kickEvents.push({side,round,scored,home:ph,away:pa});};
+    const kick=(side,round,probability)=>{const scored=random(state)<probability;if(side==='home')ph+=scored?1:0;else pa+=scored?1:0;kickEvents.push({side,round,scored,home:ph,away:pa});};
     const home=t.teams.find(x=>x.id===last.home),away=t.teams.find(x=>x.id===last.away);
     const hp=last.modelVersion>=4?penaltyProbability(home,away):.76,ap=last.modelVersion>=4?penaltyProbability(away,home):.76;
     // Five kicks each, with early clinches and then paired sudden death.
@@ -346,7 +358,7 @@ function settleTie(state,t,tie,final) {
     while(ph===pa&&kicks<100){kick('home',kicks+1,hp);kick('away',kicks+1,ap);kicks++;}
     if(ph===pa){if(random(state)<.5)ph++;else pa++;}
     last.penalties={home:ph,away:pa};
-    if(last.modelVersion>=6)last.penalties.kicks=kickEvents;
+    last.penalties.kicks=kickEvents;
     tie.winner=ph>pa?last.home:last.away;
   }
   tie.aggregate={a,b};
@@ -406,6 +418,7 @@ export function migrateSaved(saved) {
       if(oldVersion<6&&t.stage==='league'){const schedule=leagueSchedule(state,t.teams,{version:6});t.weeks=schedule.weeks;t.pots=schedule.pots;t.initialPowers=Object.fromEntries(t.teams.map(team=>[team.id,profileForTeam(team,6).rating]));t.draw=createDraw(t,'league');}
     }
     else state.tournament.simulationVersion??=1;
+    if(state.tournament.live){const live=state.tournament.live;live.mode??='knockout';if(live.mode!=='league')live.duration=playbackDuration(live.result.history.at(-1).matches,state.tournament.teams.filter(t=>t.human).map(t=>t.id));}
   }
   if(state.phase==='draft'&&state.odds.join(',')==='20,30,30,15,5')state.odds=[...ODDS];
   state.rulesVersion=2;
@@ -436,7 +449,7 @@ export function validateSaved(state,catalogue) {
     if(state.phase==='tournament')check(state.tournament?.teams?.length===36&&state.tournament.weeks?.length===8&&Array.isArray(state.tournament.history)&&['league','playoff','r16','quarter','semi','final','done'].includes(state.tournament.stage),'Turnuva kaydı eksik.');
     const draw=state.tournament?.draw,live=state.tournament?.live;
     if(draw)check(['league','knockout'].includes(draw.kind)&&Number.isInteger(draw.revealed)&&Number.isInteger(draw.total)&&draw.revealed>=0&&draw.revealed<=draw.total&&draw.total<=40&&typeof draw.done==='boolean','Kura kaydı geçersiz.');
-    if(live)check(Number.isInteger(live.minute)&&live.minute>=0&&live.minute<=live.duration&&live.duration>=90&&live.duration<=400&&LIVE_SPEEDS.includes(live.speed)&&typeof live.paused==='boolean'&&live.result?.teams?.length===36&&live.result?.history?.length===state.tournament.history.length+1&&Number.isInteger(live.rng),'Canlı maç kaydı geçersiz.');
+    if(live)check(Number.isInteger(live.minute)&&live.minute>=0&&live.minute<=live.duration&&(live.mode==='league'?live.duration===18:live.duration>=90&&live.duration<=1500)&&LIVE_SPEEDS.includes(live.speed)&&typeof live.paused==='boolean'&&live.result?.teams?.length===36&&live.result?.history?.length===state.tournament.history.length+1&&Number.isInteger(live.rng),'Canlı maç kaydı geçersiz.');
     return true;
   }catch{return false;}
 }
