@@ -1,0 +1,74 @@
+{
+  "description": "Deterministic game-balance check on the committed FC27 snapshot. Not real-world odds. Neutral field; 20,000 independent score samples per model.",
+  "seed": 2654435769,
+  "teams": [
+    {
+      "name": "Paris SG",
+      "profile": {
+        "overall": 87.72727272727273,
+        "eliteCount": 10,
+        "eliteBonus": 3,
+        "deviation": 2.004127971368055,
+        "range": 7,
+        "clubChemistry": 1,
+        "nationChemistry": 0.24242424242424246,
+        "clubBonus": 2,
+        "nationBonus": 0.29090909090909095,
+        "balancePenalty": 0,
+        "rating": 93.01818181818183,
+        "lines": {
+          "GK": 83,
+          "DEF": 88.25,
+          "MID": 88,
+          "ATT": 88.33333333333333
+        }
+      }
+    },
+    {
+      "name": "Man Utd",
+      "profile": {
+        "overall": 83,
+        "eliteCount": 2,
+        "eliteBonus": 0.6,
+        "deviation": 2.335496832484569,
+        "range": 9,
+        "clubChemistry": 1,
+        "nationChemistry": 0.2424242424242424,
+        "clubBonus": 2,
+        "nationBonus": 0.2909090909090909,
+        "balancePenalty": 0,
+        "rating": 85.89090909090909,
+        "lines": {
+          "GK": 82,
+          "DEF": 81.5,
+          "MID": 85,
+          "ATT": 83.33333333333333
+        }
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "version": 1,
+      "runs": 20000,
+      "strongWinPercent": 54.620000000000005,
+      "drawPercent": 22.705000000000002,
+      "underdogWinPercent": 22.675,
+      "meanGoals": [
+        1.8135,
+        1.08035
+      ]
+    },
+    {
+      "version": 2,
+      "runs": 20000,
+      "strongWinPercent": 83.675,
+      "drawPercent": 11.08,
+      "underdogWinPercent": 5.244999999999999,
+      "meanGoals": [
+        2.98115,
+        0.66475
+      ]
+    }
+  ]
+}

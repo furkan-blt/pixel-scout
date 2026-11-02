@@ -1,0 +1,954 @@
+@font-face {
+  font-family: Silkscreen;
+  src: url('../../assets/silkscreen.ttf') format('truetype');
+  font-display: swap;
+  font-weight: 400;
+}
+
+:root {
+  color-scheme: dark;
+  --bg-dark: #0c1811;
+  --panel-left: #102017;
+  --panel-right: #14261c;
+  --ink: #f2efe2;
+  --muted: #9eb5a3;
+  --line: #2c4c38;
+  --lime: #c5e782;
+  --green: #4ade80;
+  --red: #eb5757;
+  --yellow: #efc86b;
+  --pixel: Silkscreen, 'Courier New', monospace;
+  --display: 'Chakra Petch', system-ui, sans-serif;
+  --body: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--ink);
+  font-family: var(--body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* ==========================================
+   ÜST BİLGİ VE SKOR ÇUBUĞU (HEADER)
+   ========================================== */
+.game-header {
+  height: 64px;
+  background: rgba(10, 17, 13, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: relative;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand {
+  font: 16px/1.1 var(--pixel);
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.brand-dot {
+  color: var(--yellow);
+}
+
+.header-badge {
+  font: 9px var(--pixel);
+  letter-spacing: 0.8px;
+  color: var(--lime);
+  background: #192e20;
+  border: 1px solid #2f5238;
+  padding: 5px 10px;
+  display: inline-block;
+}
+
+.score-hud {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hud-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #142419;
+  border: 1px solid var(--line);
+  padding: 4px 14px;
+  min-width: 75px;
+}
+
+.hud-box.best {
+  border-color: #38553f;
+  background: #193121;
+}
+
+.hud-label {
+  font: 8px var(--pixel);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.hud-value {
+  font: 18px/1.1 var(--pixel);
+  color: var(--lime);
+}
+
+.hud-box.best .hud-value {
+  color: var(--yellow);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-btn {
+  font: 10px var(--pixel);
+  color: var(--muted);
+  text-decoration: none;
+  background: #17291d;
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  color: var(--lime);
+  border-color: var(--lime);
+  background: #203a28;
+}
+
+/* ==========================================
+   ANA ARENA (SPLIT SCREEN 50% / 50%)
+   ========================================== */
+.arena {
+  flex: 1;
+  display: flex;
+  position: relative;
+  min-height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.club-side {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  text-align: center;
+  overflow: hidden;
+  transition: background 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  background-color: #0b140f;
+  background-position: center;
+  background-size: cover;
+}
+
+.left-side {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.right-side {
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Büyük Arka Plan Filigranı (Su Damgası / Watermark Crest) */
+.club-bg-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.18);
+  width: 520px;
+  height: 520px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  filter: blur(2px) grayscale(15%);
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Kulüp Rengi Radyal Atmosfer Parlaması */
+.club-bg-glow {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(20px);
+  transition: all 0.8s ease;
+}
+
+.club-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 460px;
+  width: 100%;
+}
+
+/* Çok Daha Büyük ve Belirgin Logo Alanı */
+.logo-wrapper {
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 26px;
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.logo-wrapper:hover {
+  transform: scale(1.07);
+}
+
+.club-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 35px rgba(255, 255, 255, 0.15));
+  transition: filter 0.5s ease;
+}
+
+
+.club-name {
+  font: 30px/1.2 var(--pixel);
+  letter-spacing: -1px;
+  color: #ffffff;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+}
+
+.club-league {
+  font: 11px var(--pixel);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+}
+
+.value-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.revealed-value-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: popIn 0.4s ease;
+}
+
+.revealed-value {
+  font: 44px/1 var(--pixel);
+  color: var(--yellow);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(253, 224, 71, 0.3);
+}
+
+.revealed-full-value {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+/* ==========================================
+   ORTADAKİ VS ROZETİ
+   ========================================== */
+.vs-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #112217;
+  border: 3px solid var(--line);
+  color: var(--lime);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 16px var(--pixel);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), 0 0 10px rgba(197, 231, 130, 0.15);
+  z-index: 50;
+  transition: transform 0.3s ease;
+}
+
+.vs-circle:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  border-color: var(--lime);
+}
+
+/* ==========================================
+   TAHMİN BUTONLARI (HIGHER / LOWER)
+   ========================================== */
+.action-buttons-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 10px;
+  z-index: 20;
+}
+
+.hl-btn {
+  height: 60px;
+  border: 2px solid;
+  background: rgba(18, 33, 24, 0.9);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  font: 13px var(--pixel);
+  letter-spacing: 1px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.higher-btn {
+  border-color: #2e5939;
+  color: #d1f7c4;
+}
+
+.higher-btn .btn-arrow {
+  color: var(--lime);
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.higher-btn:hover {
+  background: #254a30;
+  border-color: var(--lime);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(197, 231, 130, 0.25);
+}
+
+.higher-btn:hover .btn-arrow {
+  transform: translateY(-3px);
+}
+
+.lower-btn {
+  border-color: #592e2e;
+  color: #fed7d7;
+}
+
+.lower-btn .btn-arrow {
+  color: var(--red);
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.lower-btn:hover {
+  background: #4a2525;
+  border-color: var(--red);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(248, 113, 113, 0.25);
+}
+
+.lower-btn:hover .btn-arrow {
+  transform: translateY(3px);
+}
+
+.hl-btn:active {
+  transform: translateY(1px);
+}
+
+.btn-caption {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* ==========================================
+   GERİ BİLDİRİM ROZETİ (CHECK & CROSS)
+   ========================================== */
+.feedback-badge {
+  position: absolute;
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%) scale(0.6);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 54px;
+  z-index: 80;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.feedback-badge.correct {
+  background: rgba(34, 197, 94, 0.95);
+  color: #fff;
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.7);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.feedback-badge.wrong {
+  background: rgba(239, 68, 68, 0.95);
+  color: #fff;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.7);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* ==========================================
+   OYUN BİTTİ MODALI (GAME OVER)
+   ========================================== */
+.game-over-dialog {
+  margin: auto;
+  border: 0;
+  background: transparent;
+  padding: 20px;
+  max-width: 480px;
+  width: 90%;
+  outline: none;
+}
+
+.game-over-dialog::backdrop {
+  background: rgba(4, 8, 6, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+.modal-card {
+  background: #15251b;
+  border: 2px solid var(--line);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 0 1px #2e4a36;
+  padding: 36px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: modalPop 0.3s ease;
+}
+
+.modal-badge-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.modal-card h2 {
+  font: 26px var(--pixel);
+  color: var(--red);
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.modal-reason {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.modal-scores {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.score-pill {
+  flex: 1;
+  background: #1c3224;
+  border: 1px solid var(--line);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.score-pill.highlight {
+  border-color: #4b6f52;
+  background: #203a2b;
+}
+
+.score-pill span {
+  font: 9px var(--pixel);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.score-pill strong {
+  font: 28px/1 var(--pixel);
+  color: var(--lime);
+}
+
+.score-pill.highlight strong {
+  color: var(--yellow);
+}
+
+.modal-comparison {
+  background: #101c15;
+  border: 1px solid #233b2a;
+  padding: 12px 16px;
+  width: 100%;
+  font-size: 13px;
+  color: #e2ece3;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.modal-actions-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.modal-actions-row .restart-btn {
+  flex: 2;
+}
+
+.secondary-modal-btn {
+  flex: 1;
+  height: 56px;
+  background: #14241b;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font: 10px var(--pixel);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.secondary-modal-btn:hover {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: #1e3527;
+}
+
+.restart-btn {
+  width: 100%;
+  height: 56px;
+  background: var(--lime);
+  color: #0d1a11;
+  border: 0;
+  font: 14px var(--pixel);
+  letter-spacing: 1px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(197, 231, 130, 0.3);
+}
+
+.restart-btn:hover {
+  background: #d8f598;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(197, 231, 130, 0.4);
+}
+
+.restart-btn.secondary-btn {
+  background: #203a2b;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.restart-btn.secondary-btn:hover {
+  background: #2a4c38;
+  border-color: var(--lime);
+}
+
+.modal-footer-nav {
+  margin-top: 14px;
+}
+
+.modal-link {
+  font: 10px var(--pixel);
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.modal-link:hover {
+  color: var(--lime);
+}
+
+/* ==========================================
+   KONFETİ KANVASI
+   ========================================== */
+.confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999999;
+  display: none;
+}
+
+/* ==========================================
+   NAVBAR BUTONLARI (SCOREBOARD & OYUNCU)
+   ========================================== */
+.player-nav-btn {
+  background: rgba(45, 71, 52, 0.4);
+  border-color: rgba(197, 231, 130, 0.3);
+  color: var(--lime);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-nav-btn:hover {
+  background: #25442e;
+  border-color: var(--lime);
+}
+
+.scoreboard-nav-btn {
+  background: rgba(253, 224, 71, 0.08);
+  border-color: rgba(253, 224, 71, 0.35);
+  color: var(--yellow);
+  cursor: pointer;
+}
+
+.scoreboard-nav-btn:hover {
+  background: rgba(253, 224, 71, 0.18);
+  border-color: var(--yellow);
+}
+
+/* ==========================================
+   DIALOG VE MODAL STİLLERİ
+   ========================================== */
+dialog {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: auto;
+  max-width: 92vw;
+}
+
+dialog::backdrop {
+  background: rgba(4, 9, 6, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+.start-card {
+  max-width: 480px;
+}
+
+.start-form {
+  width: 100%;
+  margin: 18px 0 14px;
+}
+
+.start-label {
+  display: block;
+  font: 10px var(--pixel);
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.player-name-input {
+  flex: 1;
+  height: 48px;
+  background: #101c15;
+  border: 2px solid var(--line);
+  color: #ffffff;
+  padding: 0 14px;
+  font: 13px var(--pixel);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.player-name-input:focus {
+  border-color: var(--lime);
+  box-shadow: 0 0 12px rgba(197, 231, 130, 0.3);
+}
+
+.start-submit-btn {
+  height: 48px;
+  padding: 0 18px;
+  background: var(--lime);
+  color: #0b140f;
+  font: 12px var(--pixel);
+  border: 0;
+  cursor: pointer;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.start-submit-btn:hover {
+  background: #d8f598;
+  transform: translateY(-1px);
+}
+
+/* Scoreboard Listesi */
+.start-scoreboard-preview,
+.modal-scoreboard-section,
+.scoreboard-card-container {
+  width: 100%;
+  margin: 14px 0 18px;
+  text-align: left;
+}
+
+.scoreboard-preview-title {
+  font: 11px var(--pixel);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scoreboard-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.scoreboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: #101c15;
+  border: 1px solid var(--line);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.scoreboard-item.rank-1 {
+  background: linear-gradient(90deg, rgba(253, 224, 71, 0.16) 0%, #101c15 100%);
+  border-color: rgba(253, 224, 71, 0.55);
+}
+
+.scoreboard-item.rank-2 {
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.14) 0%, #101c15 100%);
+  border-color: rgba(226, 232, 240, 0.45);
+}
+
+.scoreboard-item.rank-3 {
+  background: linear-gradient(90deg, rgba(251, 146, 60, 0.14) 0%, #101c15 100%);
+  border-color: rgba(251, 146, 60, 0.45);
+}
+
+.scoreboard-item.current-user-rank {
+  border-color: var(--lime);
+  background: #193122;
+  box-shadow: 0 0 14px rgba(197, 231, 130, 0.4);
+  transform: scale(1.02);
+}
+
+.scoreboard-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scoreboard-badge {
+  font-size: 16px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.scoreboard-item-name {
+  font: 12px var(--pixel);
+  color: #ffffff;
+}
+
+.scoreboard-item-tag {
+  font-size: 9px;
+  background: var(--lime);
+  color: #0b140f;
+  padding: 2px 5px;
+  font-weight: bold;
+  border-radius: 2px;
+  margin-left: 6px;
+}
+
+.scoreboard-item-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scoreboard-item-score {
+  font: 14px var(--pixel);
+  color: var(--lime);
+  font-weight: bold;
+}
+
+.scoreboard-item.rank-1 .scoreboard-item-score {
+  color: var(--yellow);
+}
+
+.scoreboard-item-date {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Özel Durum Temaları (Yeni Rekor, Podyum, Hayal Kırıklığı) */
+.modal-card.outcome-record {
+  border-color: var(--yellow);
+  box-shadow: 0 0 45px rgba(253, 224, 71, 0.35), 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+.modal-card.outcome-record h2 {
+  color: var(--yellow);
+  text-shadow: 0 0 16px rgba(253, 224, 71, 0.7);
+  animation: pulseTitle 1.4s infinite alternate;
+}
+
+.modal-card.outcome-podium {
+  border-color: var(--lime);
+  box-shadow: 0 0 40px rgba(197, 231, 130, 0.3), 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+.modal-card.outcome-podium h2 {
+  color: var(--lime);
+  text-shadow: 0 0 14px rgba(197, 231, 130, 0.6);
+}
+
+.modal-card.outcome-disappointment {
+  border-color: #ef4444;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.3), 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+.modal-card.outcome-disappointment h2 {
+  color: #f87171;
+  text-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+}
+
+@keyframes pulseTitle {
+  from { transform: scale(1); filter: brightness(1); }
+  to { transform: scale(1.04); filter: brightness(1.25); }
+}
+
+/* ==========================================
+   ANIMASYONLAR
+   ========================================== */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================
+   MOBİL UYUMLULUK
+   ========================================== */
+@media (max-width: 820px) {
+  .arena {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .left-side {
+    border-right: 0;
+    border-bottom: 2px solid var(--line);
+    padding: 30px 20px;
+  }
+
+  .right-side {
+    padding: 30px 20px 40px;
+  }
+
+  .vs-circle {
+    width: 48px;
+    height: 48px;
+    font-size: 12px;
+  }
+
+  .logo-wrapper {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 18px;
+  }
+
+  .club-bg-watermark {
+    width: 340px;
+    height: 340px;
+    opacity: 0.06;
+  }
+
+  .club-bg-glow {
+    width: 320px;
+    height: 320px;
+  }
+
+  .club-name {
+    font-size: 24px;
+  }
+
+  .revealed-value {
+    font-size: 34px;
+  }
+
+  .hl-btn {
+    height: 52px;
+    font-size: 11px;
+  }
+
+  .feedback-badge {
+    top: 50%;
+    left: 50%;
+  }
+}

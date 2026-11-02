@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Albaraka Türk">
+  <defs>
+    <linearGradient id="albOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f37021"/>
+      <stop offset="100%" stop-color="#e35205"/>
+    </linearGradient>
+    <linearGradient id="albRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d9272e"/>
+      <stop offset="100%" stop-color="#b5121b"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="24" fill="#ffffff"/>
+  <!-- Albaraka İkonik Çift Yükselen Kavis Sembolü -->
+  <path d="M36 24 C36 16, 52 16, 52 26 L52 60 C52 72, 36 72, 36 60 Z" fill="url(#albOrange)"/>
+  <path d="M60 34 C60 24, 76 24, 76 34 L76 68 C76 78, 60 78, 60 68 Z" fill="url(#albRed)"/>
+  <circle cx="84" cy="26" r="7" fill="url(#albOrange)"/>
+  <!-- albaraka Yazısı -->
+  <text x="60" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="21" fill="#333740" letter-spacing="-0.5">albaraka</text>
+</svg>

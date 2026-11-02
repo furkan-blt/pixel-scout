@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { BONUS_ID, BONUS_PLAYER, isBonusRound, openingRound, searchRosterForRound } from '../dist/bonus.js';
-import { normalizeName, compareGuess, submitGuess, drawNext } from '../dist/engine.js';
+import { normalizeName, compareGuess, submitGuess, drawNext, ageOn } from '../dist/engine.js';
 
 const normal = JSON.parse(readFileSync(new URL('../dist/players.json', import.meta.url), 'utf8')).players;
 
@@ -16,15 +16,21 @@ test('opening round is fresh photo mode even after a prior completed opener', ()
   assert.notEqual(nextLoad.guessIds, first.guessIds);
 });
 
-test('bonus can be solved by identity while all personal football facts remain unknown', () => {
-  for (const key of ['club', 'league', 'nationality', 'nationalityCode', 'position', 'birthDate', 'shirtNumber']) assert.equal(BONUS_PLAYER[key], null, key);
+test('bonus player has custom personal details (Eren Çiftçi / ALBARAKA / Stajyer / 22 yaş / 37)', () => {
+  assert.equal(BONUS_PLAYER.club, 'ALBARAKA');
+  assert.equal(BONUS_PLAYER.nationality, 'Türkiye');
+  assert.equal(BONUS_PLAYER.nationalityCode, 'TR');
+  assert.equal(BONUS_PLAYER.position, 'Stajyer');
+  assert.equal(ageOn(BONUS_PLAYER.birthDate), 22);
+  assert.equal(BONUS_PLAYER.shirtNumber, 37);
+
   const opener = openingRound();
   const roster = searchRosterForRound(opener, normal);
   const wrong = submitGuess(opener, normal[0].id, roster);
   assert.equal(wrong.status, 'playing');
-  assert.ok(Object.values(compareGuess(normal[0], BONUS_PLAYER)).every(clue => clue.status === 'miss' && clue.targetValue === null && clue.direction === null));
   assert.equal(submitGuess(wrong, BONUS_ID, roster).status, 'won');
-  assert.equal(normalizeName(BONUS_PLAYER.name), 'bonusoyuncu');
+  assert.equal(normalizeName(BONUS_PLAYER.name), 'erenciftci');
+  assert.ok(BONUS_PLAYER.aliases.some(name => normalizeName(name) === 'erenciftci'));
   assert.ok(BONUS_PLAYER.aliases.some(name => normalizeName(name) === 'bonus'));
 });
 
@@ -46,10 +52,8 @@ test('bonus is searchable only in opener and never mutates the ordinary random p
   assert.equal(JSON.stringify(normal), before);
 });
 
-test('bonus uses an original fictional SVG without personal data', () => {
-  assert.equal(BONUS_PLAYER.photo.path, 'assets/bonus/demo-player.svg');
-  assert.equal(BONUS_PLAYER.photo.sourcePage, null);
-  assert.equal(BONUS_PLAYER.photo.licenseUrl, null);
-  assert.equal(BONUS_PLAYER.photo.date, null);
-  assert.equal(BONUS_PLAYER.photo.author, 'Pixel Scout contributors');
+test('bonus uses the uploaded photo asset', () => {
+  assert.equal(BONUS_PLAYER.photo.path, 'assets/bonus/eren-ciftci.jpg');
+  assert.equal(BONUS_PLAYER.photo.author, 'Pixel Scout');
+  assert.equal(BONUS_PLAYER.photo.license, 'Personal');
 });

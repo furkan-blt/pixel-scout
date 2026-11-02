@@ -2,33 +2,106 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#111b16"><meta name="description" content="Bir yüz, sekiz tahmin. Futbolcuyu bul, hemen yeni tura geç. Ücretsiz gerçek portrelerle sınırsız futbol tahmin oyunu.">
-  <title>Pixel Scout — Futbolcuyu bul</title>
-  <link rel="icon" href="assets/ball.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+  <script>if(!location.search.includes('play=1'))location.replace('./games/');</script>
+  <meta name="theme-color" content="#0c1811"><meta name="description" content="Bir yüz, sekiz tahmin. Futbolcuyu bul, hemen yeni tura geç.">
+  <title>Futbolcuyu Bul · Pixel Scout</title>
+  <link rel="icon" href="assets/ball.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header"><a class="brand" href="./" aria-label="Pixel Scout ana sayfa"><img src="assets/ball.svg" alt="" width="42" height="42"><span>PIXEL<span>SCOUT<span class="brand-dot">.</span></span></span></a><span class="header-tag">FUTBOL BİLGİNİ SAHAYA ÇIKAR</span><nav aria-label="Ana menü"><a href="games/golcuyu-tahmin-et/" class="nav-button" style="text-decoration:none;color:var(--yellow);"><span aria-hidden="true">⚽</span><span>Golcüyü Tahmin Et</span></a><a href="games/" class="nav-button" style="text-decoration:none;color:var(--lime);"><span aria-hidden="true">🎮</span><span>Oyunlar</span></a><button class="nav-button" data-dialog="help" aria-label="Nasıl oynanır?"><span class="pixel-question">?</span><span>Nasıl oynanır?</span></button><button class="nav-button" data-dialog="stats" aria-label="İstatistikler"><span aria-hidden="true">▥</span><span>İstatistikler</span></button></nav></header>
+  <header class="site-header">
+    <a class="brand" href="games/" aria-label="Oyunlar ana sayfa">
+      <img src="assets/ball.svg" alt="" width="34" height="34">
+      <span>PIXEL<span>SCOUT</span></span>
+    </a>
+    <nav aria-label="Ana menü">
+      <button class="nav-button" data-dialog="help" aria-label="Nasıl oynanır?"><span class="pixel-question">?</span><span>Kurallar</span></button>
+      <button class="nav-button" data-dialog="stats" aria-label="İstatistikler"><span aria-hidden="true">▥</span><span>İstatistikler</span></button>
+      <a href="games/" class="nav-button back-games-btn"><span>← Oyunlar</span></a>
+    </nav>
+  </header>
   <main>
-    <div style="display:flex;gap:12px;margin:20px 0 0;flex-wrap:wrap;">
-      <a href="./" style="padding:10px 16px;background:var(--lime);color:#112115;font-family:var(--pixel);font-size:11px;text-decoration:none;font-weight:bold;border:2px solid var(--lime);">👤 1. OYUN: YÜZÜ TANI</a>
-      <a href="games/golcuyu-tahmin-et/" style="padding:10px 16px;background:#1e3224;color:var(--yellow);font-family:var(--pixel);font-size:11px;text-decoration:none;font-weight:bold;border:2px solid var(--yellow);box-shadow:3px 3px 0 #050b08;">⚽ 2. OYUN: GOLCÜYÜ TAHMİN ET ↗</a>
-    </div>
-    <section class="intro"><div><div class="eyebrow"><span class="live-dot"></span> SINIRSIZ MOD <span class="eyebrow-divider">/</span> BIG 4</div><h1>YÜZÜ TANI.<br><span>EFSANEYİ BUL.</span></h1><p>Bir futbolcu. Sekiz tahmin. Ne kadar iyi bir scoutsun?</p></div><div class="intro-ticket"><span class="ticket-star" aria-hidden="true">✦</span><div>HER BİTİŞ<br>YENİ BİR BAŞLANGIÇ.</div><span>Günlük sınır yok. Sadece futbol.</span></div></section>
     <section class="game-shell" aria-label="Futbolcu tahmin oyunu">
-      <div class="game-toolbar"><div class="mode-label"><span aria-hidden="true">▶</span> <b id="toolbar-title">BAŞLAMA VURUŞU</b></div><div class="toolbar-controls"><label class="league-select"><span>Lig</span><select id="league" aria-label="Oyuncu ligi"><option value="all">Big 4 · Tüm ligler</option value="PL">Premier League</option><option value="LaLiga">LaLiga</option><option value="SerieA">Serie A</option><option value="Ligue1">Ligue 1</option></select></label><button id="mode-toggle" class="mode-toggle" aria-pressed="false" title="Fotoğraf olmadan oyna"><span aria-hidden="true">◈</span> <span id="mode-label">Fotoğraflı</span></button></div></div>
-      <div class="game-grid">
-        <aside class="portrait-section"><div class="portrait-card"><div class="card-header"><span id="round-label">SCOUT DOSYASI #001</span><span aria-hidden="true">✦</span></div><div class="portrait-stage" id="portrait-stage"><div class="pitch-lines" aria-hidden="true"></div><div class="portrait-frame"><img id="portrait" alt="Tahmin edilecek futbolcunun bulanık portresi" hidden><div id="portrait-placeholder" class="portrait-placeholder"><span>?</span><p>OYUNCU YÜKLENİYOR</p></div></div><span class="corner corner-tl"></span><span class="corner corner-tr"></span><span class="corner corner-bl"></span><span class="corner corner-br"></span><div class="portrait-stamp" id="portrait-stamp">KİM BU FUTBOLCU?</div></div><div class="portrait-caption"><span id="photo-caption">Her yanlış tahminde fotoğraf biraz netleşir.</span><span class="photo-dots" id="photo-dots" aria-hidden="true">● ● ● ● ● ● ● ●</span></div></div><div class="mini-tip"><span aria-hidden="true">✦</span><p id="mini-tip-text">Tanıdık gelmedi mi? Bir isimle başla,<br>ipuçları seni doğru oyuncuya götürsün.</p></div><button id="clue-button" class="clue-button" disabled><span aria-hidden="true">✧</span> İpucu aç <span id="clue-note">3 tahminden sonra</span></button><button id="skip-bonus" class="clue-button" hidden><span aria-hidden="true">↪</span> Bonusu geç <span>Normal oyun →</span></button><p id="clue-text" class="clue-text" hidden></p></aside>
-        <div class="guess-section"><div class="guess-heading"><div><span class="small-label">TRANSFER RADARIN</span><h2>Bir tahmin yap.</h2></div><div class="attempt-counter"><strong id="attempt-number">01</strong><span>/ 08<br>TAHMİN</span></div></div><div id="lives" class="lives" aria-label="8 tahmin hakkı"></div>
-          <form id="guess-form" autocomplete="off"><label for="player-search" class="input-label">Sence fotoğraftaki futbolcu kim?</label><div class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="player-search" placeholder="Big 4’teki bir futbolcu adı yaz…" role="combobox" aria-expanded="false" aria-controls="suggestions" aria-autocomplete="list" autocomplete="off" spellcheck="false" disabled><button type="submit" id="submit-guess" aria-label="Tahmini gönder" disabled>↵</button><ul id="suggestions" role="listbox" hidden></ul></div><div class="search-footnote"><span id="search-count">Tüm Big 4 kadroları aranıyor.</span><kbd>ENTER ↵</kbd></div></form>
-          <p id="bonus-note" class="bonus-note" hidden>✦ Özel açılış bonusu. Özellikler bilinmiyor; sadece fotoğraftan tahmin et. Bonus sonuçları normal skorunu etkilemez.</p><p id="game-message" role="status" aria-live="polite" class="game-message"></p><div class="feedback-legend"><span><i class="legend-dot exact"></i> Doğru</span><span><i class="legend-dot league"></i> Aynı lig</span><span><i class="legend-dot miss"></i> Farklı</span><span>↑ ↓ Sayıyı takip et</span></div>
-          <div id="empty-state" class="empty-state"><img src="assets/boot.svg" width="64" height="54" alt=""><h3>İlk pas senden.</h3><p>Tahminlerin burada görünecek.<br>Her ipucu, gole bir adım daha yakın.</p><div class="empty-categories"><span>KULÜP</span><span>ÜLKE</span><span>MEVKİ</span><span>YAŞ</span><span>FORMA</span></div></div><div id="guess-history" class="guess-history" aria-label="Tahmin geçmişi"></div>
-          <section id="result-panel" class="result-panel" hidden aria-live="polite"><span id="result-eyebrow" class="small-label"></span><h2 id="result-title"></h2><p id="result-details"></p><div class="result-actions"><button id="next-round" class="primary-button"><b id="next-round-label">YENİ FUTBOLCU</b> <span aria-hidden="true">→</span></button><button id="share-result" class="secondary-button">Sonucu kopyala</button></div></section>
+      <div class="game-toolbar">
+        <div class="mode-label"><span aria-hidden="true">▶</span> <b id="toolbar-title">FUTBOLCUYU BUL</b></div>
+        <div class="toolbar-controls">
+          <label class="league-select"><span>LİG</span><select id="league" aria-label="Oyuncu ligi"><option value="all">Big 4 · Tüm ligler</option><option value="PL">Premier League</option><option value="LaLiga">LaLiga</option><option value="SerieA">Serie A</option><option value="Ligue1">Ligue 1</option></select></label>
+          <button id="mode-toggle" class="mode-toggle" aria-pressed="false" title="Fotoğraf olmadan oyna"><span aria-hidden="true">◈</span> <span id="mode-label">Fotoğraflı</span></button>
         </div>
-      </div><div class="game-bottom"><span><i class="live-dot"></i> <span id="pool-size">Oyuncu havuzu hazırlanıyor</span></span><span>ACELE YOK. SINIR YOK.</span><span id="session-score">BU OTURUM · 0 GOL</span></div>
+      </div>
+      <div class="game-grid">
+        <aside class="portrait-section">
+          <div class="portrait-card">
+            <div class="card-header"><span id="round-label">SCOUT DOSYASI #001</span><span aria-hidden="true">⚽</span></div>
+            <div class="portrait-stage" id="portrait-stage">
+              <div class="pitch-lines" aria-hidden="true"></div>
+              <div class="portrait-frame" id="portrait-frame">
+                <img id="portrait" alt="Tahmin edilecek futbolcunun bulanık portresi" draggable="false" oncontextmenu="return false;" hidden>
+                <div class="portrait-shield" id="portrait-shield" aria-hidden="true"></div>
+                <div id="portrait-placeholder" class="portrait-placeholder"><span>?</span><p>OYUNCU YÜKLENİYOR</p></div>
+              </div>
+              <span class="corner corner-tl"></span><span class="corner corner-tr"></span><span class="corner corner-bl"></span><span class="corner corner-br"></span>
+              <div class="portrait-stamp" id="portrait-stamp">KİM BU FUTBOLCU?</div>
+            </div>
+            <div class="portrait-caption">
+              <span id="photo-caption">Her yanlış tahminde fotoğraf biraz netleşir.</span>
+              <span class="photo-dots" id="photo-dots" aria-hidden="true">● ● ● ● ● ● ● ●</span>
+            </div>
+          </div>
+          <div class="mini-tip" hidden><p id="mini-tip-text"></p></div>
+          <button id="clue-button" class="clue-button" disabled><span aria-hidden="true">✧</span> İpucu aç <span id="clue-note">3 tahminden sonra</span></button>
+          <button id="skip-bonus" class="clue-button" hidden><span aria-hidden="true">↪</span> Bonusu geç <span>Normal oyun →</span></button>
+          <p id="clue-text" class="clue-text" hidden></p>
+        </aside>
+        <div class="guess-section">
+          <div class="guess-heading">
+            <div><span class="small-label">TAHMİN PANELİ</span><h2>Futbolcuyu Tahmin Et</h2></div>
+            <div class="attempt-counter"><strong id="attempt-number">01</strong><span>/ 08<br>HAK</span></div>
+          </div>
+          <div id="lives" class="lives" aria-label="8 tahmin hakkı"></div>
+          <form id="guess-form" autocomplete="off">
+            <div class="search-wrap">
+              <span class="search-icon" aria-hidden="true">⌕</span>
+              <input id="player-search" placeholder="Futbolcu adı yazın…" role="combobox" aria-expanded="false" aria-controls="suggestions" aria-autocomplete="list" autocomplete="off" spellcheck="false" disabled>
+              <button type="submit" id="submit-guess" aria-label="Tahmini gönder" disabled>↵</button>
+              <ul id="suggestions" role="listbox" hidden></ul>
+            </div>
+            <div class="search-footnote" hidden><span id="search-count"></span></div>
+          </form>
+          <p id="bonus-note" class="bonus-note" hidden>✦ Özel açılış bonusu: Sadece fotoğraftan tahmin et veya bonusu geç.</p>
+          <p id="game-message" role="status" aria-live="polite" class="game-message"></p>
+          <div class="feedback-legend"><span><i class="legend-dot exact"></i> Doğru</span><span><i class="legend-dot league"></i> Aynı lig</span><span><i class="legend-dot miss"></i> Farklı</span><span>↑ ↓ Yaş / Forma yönü</span></div>
+          <div id="empty-state" class="empty-state">
+            <img src="assets/boot.svg" width="56" height="48" alt="">
+            <h3>İlk tahminini yap</h3>
+            <p>Tahminlerin ve ipuçların burada listelenecek.</p>
+            <div class="empty-categories"><span>KULÜP</span><span>ÜLKE</span><span>MEVKİ</span><span>YAŞ</span><span>FORMA</span></div>
+          </div>
+          <div id="guess-history" class="guess-history" aria-label="Tahmin geçmişi"></div>
+          <section id="result-panel" class="result-panel" hidden aria-live="polite">
+            <span id="result-eyebrow" class="small-label"></span>
+            <h2 id="result-title"></h2>
+            <p id="result-details"></p>
+            <div class="result-actions">
+              <button id="next-round" class="primary-button"><b id="next-round-label">YENİ FUTBOLCU</b> <span aria-hidden="true">→</span></button>
+              <button id="share-result" class="secondary-button">Sonucu kopyala</button>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div class="game-bottom">
+        <span><i class="live-dot"></i> <span id="pool-size">Oyuncu havuzu hazırlanıyor</span></span>
+        <span id="session-score">BU OTURUM · 0 GOL</span>
+      </div>
     </section>
-    <section class="how-strip" aria-label="Kısa oyun kuralları"><div><span class="step-number">01</span><p><strong>Yüze bir bak.</strong><span>Bulanık portredeki futbolcuyu tanı.</span></p></div><div><span class="step-number">02</span><p><strong>İpuçlarını takip et.</strong><span>Kulüp, ülke, mevki, yaş ve forma.</span></p></div><div><span class="step-number">03</span><p><strong>Bul. Tekrar oyna.</strong><span>Yeni bir oyuncu her zaman hazır.</span></p></div></section>
   </main>
-  <footer><span class="footer-brand">PIXEL SCOUT <span>© 2026</span></span><p>Futbolu sevenler için. Bir tur daha diyenler için.</p><button class="footer-link" data-dialog="credits">Fotoğraf kaynakları ↗</button></footer>
+  <footer>
+    <span class="footer-brand">PIXEL SCOUT</span>
+    <button class="footer-link" data-dialog="credits">Fotoğraf kaynakları ↗</button>
+  </footer>
   <dialog id="modal"><div class="dialog-header"><span id="dialog-label" class="small-label">PIXEL SCOUT</span><button id="close-dialog" aria-label="Pencereyi kapat">✕</button></div><div id="dialog-content"></div></dialog>
   <script type="module" src="app.js"></script>
 </body></html>

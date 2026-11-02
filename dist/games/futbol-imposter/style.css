@@ -1,0 +1,572 @@
+@font-face {
+  font-family: Silkscreen;
+  src: url('../../assets/silkscreen.ttf') format('truetype');
+  font-display: swap;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  --bg-deep: #0c1811;
+  --bg-card: #14261c;
+  --bg-inner: #102017;
+  --border-subtle: #2c4c38;
+  --border-bright: #467356;
+  --emerald: #c5e782;
+  --emerald-bright: #c5e782;
+  --crimson: #eb5757;
+  --crimson-bright: #ff7b7b;
+  --amber: #efc86b;
+  --text-main: #f2efe2;
+  --text-muted: #9eb5a3;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Chakra Petch', system-ui, sans-serif;
+  --font-pixel: Silkscreen, monospace;
+}
+
+html, body {
+  min-height: 100%;
+  background-color: var(--bg-deep);
+  background-image: repeating-linear-gradient(
+    90deg,
+    #0c1811 0px,
+    #0c1811 64px,
+    #0f1e15 64px,
+    #0f1e15 128px
+  );
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input {
+  font-family: inherit;
+}
+
+.imposter-app {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 22px 18px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  color: var(--emerald);
+  text-decoration: none;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  background: #1b3325;
+  border-color: var(--emerald);
+}
+
+.screen-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 6px 0 #060d09;
+}
+
+.hero-block {
+  text-align: center;
+}
+
+.step-pill {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #102017;
+  border: 1px solid var(--border-bright);
+  color: var(--emerald-bright);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  margin-bottom: 10px;
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.game-subtitle {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.section-box {
+  background: var(--bg-inner);
+  border: 1px solid var(--border-subtle);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.section-hint {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.add-player-row {
+  display: flex;
+  gap: 10px;
+}
+
+.player-input {
+  flex: 1;
+  background: #0c1811;
+  border: 1px solid var(--border-bright);
+  padding: 11px 14px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.player-input:focus {
+  border-color: var(--emerald);
+}
+
+.add-player-btn {
+  padding: 0 18px;
+  border: 1px solid var(--border-bright);
+  background: #1a3124;
+  color: var(--emerald-bright);
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-player-btn:hover {
+  background: var(--emerald);
+  color: #0d1a12;
+}
+
+.players-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  background: #1a3124;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.remove-player-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.remove-player-btn:hover {
+  color: var(--crimson-bright);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.seg-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  background: #0c1811;
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+.seg-option {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 9px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.seg-option.active {
+  background: var(--emerald);
+  color: #0d1a12;
+  font-weight: 800;
+}
+
+.error-banner {
+  background: rgba(235, 87, 87, 0.15);
+  border: 1px solid var(--crimson);
+  color: #fda4af;
+  padding: 11px 14px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 15px 22px;
+  border: none;
+  background: var(--emerald);
+  color: #0d1a12;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #060d09;
+  transition: all 0.15s ease;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #d8f49d;
+  transform: translateY(-1px);
+}
+
+.primary-btn:disabled {
+  background: #1a3124;
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: 1px solid var(--border-bright);
+  background: #102017;
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  border-color: var(--emerald);
+}
+
+/* ==================== 2. ELDEN ELE ROL KARTI EKRANI ==================== */
+.pass-top {
+  text-align: center;
+}
+
+.pass-instruction {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+
+.pass-player-name {
+  font-family: var(--font-display);
+  font-size: 2.15rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.secret-card {
+  min-height: 260px;
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.secret-card.locked {
+  background: #102017;
+  border: 2px dashed var(--border-bright);
+}
+
+.secret-card.locked:hover {
+  border-color: var(--emerald-bright);
+}
+
+.secret-card.revealed-crew {
+  background: #102419;
+  border: 2px solid var(--emerald);
+  box-shadow: 0 5px 0 #060d09;
+}
+
+.secret-card.revealed-imposter {
+  background: #241316;
+  border: 2px solid var(--crimson);
+  box-shadow: 0 5px 0 #060d09;
+}
+
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.card-lock-icon {
+  font-size: 2.8rem;
+}
+
+.card-tap-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.card-tap-sub {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.role-badge {
+  padding: 5px 14px;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  background: #1a3124;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+}
+
+.secret-word-big {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #ffffff;
+  padding: 6px 0;
+}
+
+.secret-word-big.is-imposter {
+  color: var(--crimson-bright);
+}
+
+.imposter-hint-pill {
+  padding: 8px 16px;
+  background: rgba(239, 200, 107, 0.14);
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.role-sub-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 380px;
+  line-height: 1.45;
+}
+
+/* ==================== 3. TARTIŞMA & TEK ADIMDA OYLAMA EKRANI ==================== */
+.discussion-hero {
+  text-align: center;
+  padding: 12px 8px;
+}
+
+.starter-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 5vw, 2.4rem);
+  font-weight: 700;
+  color: var(--emerald-bright);
+  margin: 8px 0 12px;
+}
+
+.discussion-sub {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.vote-cta-btn {
+  width: 100%;
+  padding: 15px 22px;
+  border: none;
+  background: var(--amber);
+  color: #0d1a12;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #060d09;
+  transition: transform 0.15s ease;
+}
+
+.vote-cta-btn:hover {
+  transform: translateY(-1px);
+}
+
+.inline-vote-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.vote-prompt-title {
+  display: block;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--amber);
+}
+
+.vote-players-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.vote-player-btn {
+  padding: 15px 14px;
+  background: #102017;
+  border: 1px solid var(--border-bright);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.vote-player-btn:hover {
+  background: #241316;
+  border-color: var(--crimson-bright);
+  transform: translateY(-1px);
+}
+
+/* ==================== 4. SONUÇ EKRANI ==================== */
+.result-banner {
+  text-align: center;
+  padding: 20px 16px;
+  background: #102017;
+  border: 1px solid var(--border-subtle);
+}
+
+.result-emoji {
+  font-size: 3rem;
+  margin-bottom: 6px;
+}
+
+.result-title {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.result-subtitle {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+}
+
+.reveal-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.detail-card {
+  background: #102017;
+  border: 1px solid var(--border-subtle);
+  padding: 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.detail-big-val {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.detail-big-val.emerald {
+  color: var(--emerald-bright);
+}
+
+.detail-big-val.crimson {
+  color: var(--crimson-bright);
+}
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .settings-grid, .vote-players-grid {
+    grid-template-columns: 1fr;
+  }
+}

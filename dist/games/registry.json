@@ -1,14 +1,32 @@
 [
   {
     "id": "who-are-ya",
-    "title": "Futbolcuyu bul",
-    "description": "Bulanık portre, sekiz tahmin ve sınırsız Big 4 turu.",
+    "title": "Futbolcuyu Bul",
+    "description": "Bulanık portre ve kulüp, lig, mevki, yaş ipuçlarıyla gizli futbolcuyu 8 tahminde bul.",
     "href": "../index.html"
   },
   {
-    "id": "golcuyu-tahmin-et",
-    "title": "Golcüyü Tahmin Et",
-    "description": "Tarihi maçlardaki unutulmaz golleri atan futbolcuları ipuçlarıyla bul.",
-    "href": "./golcuyu-tahmin-et/index.html"
+    "id": "piyasa-degeri",
+    "title": "Piyasa Değeri (Higher or Lower)",
+    "description": "Hangi kulübün kadro değeri daha yüksek? Seriyi bozmadan en yüksek skora ulaş.",
+    "href": "./piyasa-degeri/index.html"
+  },
+  {
+    "id": "cok-oyunculu",
+    "title": "Çok Oyunculu Piyasa Değeri Arenası",
+    "description": "4 haneli oda koduyla arkadaşlarınla canlı yarış! Futbolcunun piyasa değerine en yakın tahmini yap.",
+    "href": "./cok-oyunculu/index.html"
+  },
+  {
+    "id": "futbol-imposter",
+    "title": "FUTBOL IMPOSTER",
+    "description": "Telefonu elden ele gezdir, gizli futbolcuyu öğren ve tek kelimelik ipuçlarıyla Imposter'ı yakala.",
+    "href": "./futbol-imposter/index.html"
+  },
+  {
+    "id": "fut-draft",
+    "title": "FUT Draft",
+    "description": "3–5 kişiyle 11'ini kur, gizlice futbolcu çal ve 36 takımlı Avrupa Kupası'nda hafta hafta finale yürü.",
+    "href": "./fut-draft/index.html"
   }
 ]

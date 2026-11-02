@@ -1,5 +1,40 @@
 <!doctype html>
 <html lang="tr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Oyunlar · Pixel Scout</title><link rel="stylesheet" href="./launcher.css"></head>
-<body><main><a href="../index.html">← Pixel Scout</a><p class="eyebrow">PIXEL SCOUT ARCADE</p><h1>Bir oyun seç.</h1><p>Futbolu sevenler için mini oyunlar.</p><div id="games" class="games" aria-label="Oyun listesi"></div><p id="message" role="status" aria-live="polite"></p></main><script type="module" src="./launcher.js"></script></body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c1811">
+  <title>Pixel Scout — Futbol Oyunları</title>
+  <link rel="icon" href="../assets/ball.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./launcher.css">
+</head>
+<body>
+  <div class="pitch-bg" aria-hidden="true">
+    <div class="pitch-circle"></div>
+    <div class="pitch-halfway"></div>
+  </div>
+
+  <header class="hub-header">
+    <div class="hub-header-inner">
+      <div class="brand-lockup">
+        <img src="../assets/ball.svg" alt="" width="34" height="34">
+        <span class="brand-name">PIXEL<span>SCOUT</span></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="hub-main">
+    <div class="hub-heading">
+      <h1>SAHAYA ÇIK</h1>
+    </div>
+
+    <div id="games" class="games" aria-label="Oyun listesi"></div>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+
+  <script type="module" src="./launcher.js"></script>
+</body>
 </html>
