@@ -12,6 +12,8 @@ GitHub sürümünde her sayfa açılışında kurgusal Bonus Oyuncu demosu göst
 
 ## FUT Draft
 
+Vercel yayınında `/games/fut-draft/` ve altındaki dosyalar sunucu tarafında şifreyle korunur. `FUT_DRAFT_PASSWORD` ve rastgele, en az 32 baytlık `FUT_DRAFT_SESSION_SECRET` yayın ortamında tanımlanmalıdır; kaynak koduna eklenmez. Başarılı giriş 12 saatlik imzalı, HttpOnly/Secure bir çerez oluşturur. Yerel statik sunucu ve GitHub Pages, Vercel middleware çalıştırmaz.
+
 `/games/fut-draft/`: aynı cihazda 3–5 kişiyle oynanan 4-3-3 draft ve Avrupa Kupası oyunu. 11 seçim turunda ilk seçen her tur kayar. Her kutu aynı seviyeden üç futbolcu açar; varsayılan seviye olasılıkları %20 / %40 / %25 / %10 / %5'tir ve oyun öncesi düzenlenebilir. Her katılımcının her mevkide bir kez kullanabileceği 1. seviye jokeri vardır. Seçilmeyen futbolcular havuza döner; katılımcı kadrolarında aynı futbolcu tekrar etmez.
 
 Ardından iki tur gizli koruma/çalma yapılır. İlk tur sıradaki bir sonraki, ikinci tur iki sonraki katılımcı hedeflenir; rakip değişir. Koruma ve çalma hedefi birlikte kilitlenir; tüm katılımcılar bitirmeden açıklanmaz. Seçim ekranında tüm kadrolar ve senden çalacak rakip görünür, seçimler gizlidir. Korunan hedefe yapılan çalma yanar. Başarılı hedefler önce ayrılır, çalanlar aynı mevkiden karşılık verir. Diğer başarılı hedefler karşılık olamaz; başka uygun futbolcu yoksa yeni gelen geri verilir. Tur sonunda herkes 11 kişidir. Her tur koruma yeniden seçilir.
