@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+import protect from '../server/fut-access.js';
+
+test('Draft authentication protects the page and every game asset', async () => {
+  process.env.FUT_DRAFT_PASSWORD = randomBytes(12).toString('hex');
+  process.env.FUT_DRAFT_SESSION_SECRET = randomBytes(32).toString('hex');
+  const origin = 'https://example.test';
+  const root = `${origin}/games/fut-draft/`;
+  const request = (url = root, options) => protect(new Request(url, options));
+  const login = code => request(root, { method: 'POST', headers: { origin }, body: new URLSearchParams({ code }) });
+  const page = await request();
+  assert.match(await page.text(), /Oyun şifresi/);
+  for (const file of ['app.js', 'rules.js', 'players.json', 'style.css']) assert.equal((await request(root + file)).status, 401);
+  assert.equal((await login('incorrect')).status, 401);
+  assert.equal((await request(root, { method: 'POST', headers: { origin: 'https://other.test' }, body: new URLSearchParams({ code: process.env.FUT_DRAFT_PASSWORD }) })).status, 403);
+  const success = await login(process.env.FUT_DRAFT_PASSWORD);
+  assert.equal(success.status, 303);
+  const cookie = success.headers.get('set-cookie');
+  assert.match(cookie, /HttpOnly; Secure; SameSite=Strict/);
+  const value = cookie.split(';')[0];
+  const accepted = await request(root + 'app.js', { headers: { cookie: value } });
+  assert.equal(accepted.headers.get('x-middleware-next'), '1');
+  assert.match(accepted.headers.get('cache-control'), /no-store/);
+  const forged = value.slice(0, -2) + 'ff';
+  assert.equal((await request(root + 'app.js', { headers: { cookie: forged } })).status, 401);
+  const expired = value.replace(/=\d+\./, '=1000000000000.');
+  assert.equal((await request(root + 'app.js', { headers: { cookie: expired } })).status, 401);
+  assert.equal((await request(`${origin}/`)).headers.get('x-middleware-next'), '1');
+  delete process.env.FUT_DRAFT_SESSION_SECRET;
+  assert.equal((await request()).status, 503);
+  delete process.env.FUT_DRAFT_PASSWORD;
+});

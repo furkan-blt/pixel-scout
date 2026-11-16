@@ -1,0 +1,340 @@
+{
+  "edition": "EA SPORTS FC 27",
+  "capturedAt": "2026-10-16",
+  "url": "https://www.ea.com/games/ea-sports-fc/ratings",
+  "scope": "First 60 ratings pages; men's base items rated 70+. This is a selected pool, not the entire database.",
+  "positionGrouping": "GK goalkeeper; defense DEF; ST/CF/LW/RW/LM/RM ATT (wingers); remaining midfielders MID. Original position retained in detailPosition.",
+  "playerCount": 4847,
+  "counts": {
+    "GK": [
+      14,
+      28,
+      80,
+      153,
+      183
+    ],
+    "DEF": [
+      22,
+      89,
+      240,
+      555,
+      634
+    ],
+    "MID": [
+      34,
+      87,
+      245,
+      500,
+      559
+    ],
+    "ATT": [
+      26,
+      80,
+      223,
+      534,
+      561
+    ]
+  },
+  "sources": [
+    {
+      "page": 1,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings",
+      "sha256": "0964ae939a7d31e8ab26ea20df465d96bdcd153b8de690042f7e66786d2c5140"
+    },
+    {
+      "page": 2,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=2",
+      "sha256": "8848e3e82b0c264c893b1b4a17b7257483b48efc121fb16c404a82467bffc4db"
+    },
+    {
+      "page": 3,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=3",
+      "sha256": "03d379663f76105445cd5018dcf2cd86cfa6a8f94769b784898a6c2265961e06"
+    },
+    {
+      "page": 4,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=4",
+      "sha256": "52006023a07b05c581384d6175973c10db09ba11b237f35e4d97f7d8a7e829e0"
+    },
+    {
+      "page": 5,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=5",
+      "sha256": "41ee02e3cf1009776f45c40d1a433694fcb58a08ce77b943112c2f57d4cd0a90"
+    },
+    {
+      "page": 6,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=6",
+      "sha256": "d0d7e3334b7778f485335ae58d969805cc2d3bae2dee69945d1c895d6abf3e9a"
+    },
+    {
+      "page": 7,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=7",
+      "sha256": "119100a8ed01f8bee4fa53e47d463aeda2478e2e7f7f81d23f9179094202f91d"
+    },
+    {
+      "page": 8,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=8",
+      "sha256": "ee1062163867b5ae45930b3610224a3f4d40dd0a5a2ca08968e9a880ee67ed41"
+    },
+    {
+      "page": 9,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=9",
+      "sha256": "0450bccfaa5534054089a7d2a164d717676568f9a7972f38917f33a9c7db6d6d"
+    },
+    {
+      "page": 10,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=10",
+      "sha256": "8fce97298441a055f2884023eb255d6f35275cb4418a7cdea13d93b377f32103"
+    },
+    {
+      "page": 11,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=11",
+      "sha256": "1f06e49e1c7250d067b712faee2cc0fcb28948837c20d02b5f6b1a09edba164e"
+    },
+    {
+      "page": 12,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=12",
+      "sha256": "f9beaa7e87c52d4abafad71e48eb4d7df894a0c7503a6bdcd0bbc543753f0cb4"
+    },
+    {
+      "page": 13,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=13",
+      "sha256": "9a02979865c5ead94bf8f98455b7a45fe578d075fa3a3e94a6e77ab7928817ab"
+    },
+    {
+      "page": 14,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=14",
+      "sha256": "9255d3f1eedc24260ba52e2aa3149eda74a3e7a0800a1cf54c14b00c99fb0cb5"
+    },
+    {
+      "page": 15,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=15",
+      "sha256": "6e25b18a8c59a98833302590c73b730a6d843d1594c157b9e09b659300a9d1b3"
+    },
+    {
+      "page": 16,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=16",
+      "sha256": "20b9e1f254ea8f00611011491ea238d038c49117db1f97212c38df3306b7fd6b"
+    },
+    {
+      "page": 17,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=17",
+      "sha256": "1f510f67695ba4b755c74e686bdb202658d7bd8cfba77c2cf93b028ab3b7ea8f"
+    },
+    {
+      "page": 18,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=18",
+      "sha256": "56579218d87e063a65a03cb32b009ec91470d102337d73aa86f70a7a27e18504"
+    },
+    {
+      "page": 19,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=19",
+      "sha256": "23ce40e03acf57118febf570dd386891a317b733aac8bff603cfc74558bae1ba"
+    },
+    {
+      "page": 20,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=20",
+      "sha256": "a24a89db1d49efb632656e75453218363b775d5b8788136b979e1e4c01485351"
+    },
+    {
+      "page": 21,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=21",
+      "sha256": "fb13b1464de9971f69af02b1edeb062fcaa8ab48b7b1161e2a9857f2c79090d4"
+    },
+    {
+      "page": 22,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=22",
+      "sha256": "0d3450e90b178967c15f18c33d0f55456a631432b30d6ba01851e0ec559683bb"
+    },
+    {
+      "page": 23,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=23",
+      "sha256": "d6d8f03615c8e9e781e7651a7045ce06b6dc9d0d5f71096cfc29ac3d9f9a9348"
+    },
+    {
+      "page": 24,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=24",
+      "sha256": "882a03b9e1ed5a45c0cc17d1fb3a799252755bc6d48ba7ba72e71c875a120b03"
+    },
+    {
+      "page": 25,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=25",
+      "sha256": "085edd4061dd172b06340bd414845cfcb81339eb2c03896c4ae16d1362b8bff4"
+    },
+    {
+      "page": 26,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=26",
+      "sha256": "5f735cbaac17361cf075f53a06cb3dcdd5c24006c1700420d27ab5aa755fe9e9"
+    },
+    {
+      "page": 27,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=27",
+      "sha256": "d23894aa50b30b18de54d9d8aed16d4a83e7c779ece61d068387c7cba4fca914"
+    },
+    {
+      "page": 28,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=28",
+      "sha256": "d9862d684ca2d635eb16212b1ec347ad6384e86292f0eb5e67f33136da551282"
+    },
+    {
+      "page": 29,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=29",
+      "sha256": "86d2ee63b76060bffe9c75095dc55cbb27c3db291bd2dbe0d1e1a56f0cb74d88"
+    },
+    {
+      "page": 30,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=30",
+      "sha256": "42e56c6ca8177157c02aac9307cf986214eac0d455aa6706faf8020f9fbbf639"
+    },
+    {
+      "page": 31,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=31",
+      "sha256": "10babedaad5f031de0a5b446e041ccece8f34b88b9d9c2e7bfb1bc235c8d9aaa"
+    },
+    {
+      "page": 32,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=32",
+      "sha256": "28c01dce34c26d1f2d8321ff28d8743cce41b9b09152772e05fccdf237961d05"
+    },
+    {
+      "page": 33,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=33",
+      "sha256": "1cf54a12cc4cc5fc95f986a03e100f2f26a793a9286c98e6f285a16fd8bb7572"
+    },
+    {
+      "page": 34,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=34",
+      "sha256": "951fc3c08987e457a91f4094a8736d1ab0b8a82001f77a6677bd1dff79776fec"
+    },
+    {
+      "page": 35,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=35",
+      "sha256": "f3a0ef5b890c25aa3b600646051e12f9e3b25ffac9d6bbd9d3792c0b1c35b6e4"
+    },
+    {
+      "page": 36,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=36",
+      "sha256": "53f77d3fc3b3adeba3fda0b2391ff7b4e276fef4d65d73ab364579b8ca45e924"
+    },
+    {
+      "page": 37,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=37",
+      "sha256": "16aa88cc56e680ad8e5f3cf2cf5f39935a4cbf00a0174324087d9a0be26ea119"
+    },
+    {
+      "page": 38,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=38",
+      "sha256": "24a00d29d8e2f558c745432c42e57f17738acdabb8617baecc865b1e0e4d31be"
+    },
+    {
+      "page": 39,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=39",
+      "sha256": "8b899db96ad26b90a56c1fddb947970f02e69ec3b1f1abcd35342c55a78a4b2d"
+    },
+    {
+      "page": 40,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=40",
+      "sha256": "84205488a65d577a64a1942336a3ba0b72cb2edaffc15c1bd00c4dc1cd504b6f"
+    },
+    {
+      "page": 41,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=41",
+      "sha256": "61f613f8146991f24ebecc3a77054ceeb2738edafbd21b771cbb8fb1e72810b8"
+    },
+    {
+      "page": 42,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=42",
+      "sha256": "4c7c3404cfc9968a256017f1bebe6c54eec1c86d8c7848e406993492c9a54395"
+    },
+    {
+      "page": 43,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=43",
+      "sha256": "69a2952cdea1c64e4ca0efebad3aca2f3aed07f358930b20bbb1afcde67936fa"
+    },
+    {
+      "page": 44,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=44",
+      "sha256": "798eb29a02cb1aee12d67d81e3392f30c317857758933e028dd137bcb81f2de4"
+    },
+    {
+      "page": 45,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=45",
+      "sha256": "6f601bd1163112a0d31df7837c42d800ca041745ffc130d016d52d40ecac1517"
+    },
+    {
+      "page": 46,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=46",
+      "sha256": "c98860d9b51f8b818afd7d80291f999f7e350272cddd45aeb4dcb9706c8cb5b0"
+    },
+    {
+      "page": 47,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=47",
+      "sha256": "725cddc1d374de6ac611793c90d6dd25d2fb3909313dbdce5d16a49c967babdc"
+    },
+    {
+      "page": 48,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=48",
+      "sha256": "ae5608e983c6f72aff98812b8e9ce6e35a0e9a603e591dd0b25695cf97ec5307"
+    },
+    {
+      "page": 49,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=49",
+      "sha256": "1314019edfbd74f7d3f867bc110c4d236555b7d85452bb29d0e89db4c3cbaba6"
+    },
+    {
+      "page": 50,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=50",
+      "sha256": "c3131809a160b5b62d0305c165ad3e7ed24459c5d6a7e6ecdade20638d7cc6e5"
+    },
+    {
+      "page": 51,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=51",
+      "sha256": "b73bd074cd48b465aa858828404a8222063d039b2282ee01a0a9a48a0272769d"
+    },
+    {
+      "page": 52,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=52",
+      "sha256": "c03b4d7e4c2c29e578f05c592c38be4c450668a63eb726f53bfeeac93fdc5e1e"
+    },
+    {
+      "page": 53,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=53",
+      "sha256": "7f79b174e16470ca88248595bd8c9a369c1eb051a881cd242588addaae5ae1c9"
+    },
+    {
+      "page": 54,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=54",
+      "sha256": "85f6104306e24772c2c71bd4552c5879fe86f06600348a0fb12a908afcbb929f"
+    },
+    {
+      "page": 55,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=55",
+      "sha256": "55c442ceada49feee792e9eba8bc960768dbdc882b6aa61e60dc4592e9b8ceff"
+    },
+    {
+      "page": 56,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=56",
+      "sha256": "1752c089f6bb95d09a68a2a44b22c5dd2173d9b5e38230f374d4687d5507041a"
+    },
+    {
+      "page": 57,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=57",
+      "sha256": "33ae9a768bf8385ef656cd215145e7a20cf48c15a29508382e0296b3b87fe15a"
+    },
+    {
+      "page": 58,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=58",
+      "sha256": "ff7eb739a2106bc3d4b2acfbc5fb586b3f96bc6f546ca993dba3a302f79e0d0d"
+    },
+    {
+      "page": 59,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=59",
+      "sha256": "7cd1afd87a4aaf9086b5d7fe031e9733dc85eede5a7e4609bec5a96b1666fc41"
+    },
+    {
+      "page": 60,
+      "url": "https://www.ea.com/games/ea-sports-fc/ratings?page=60",
+      "sha256": "ddb2586c45014339d7386ad623721d4fdc67562704cd51c457325ce287eaa9e4"
+    }
+  ]
+}

@@ -10,5 +10,11 @@
     "title": "Golcüyü Tahmin Et",
     "description": "Tarihi maçlardaki unutulmaz golleri atan futbolcuları ipuçlarıyla bul.",
     "href": "./golcuyu-tahmin-et/index.html"
+  },
+  {
+    "id": "fut-draft",
+    "title": "FUT Draft",
+    "description": "3–5 kişiyle 11'ini kur, gizlice futbolcu çal ve 36 takımlı Avrupa Kupası'nda hafta hafta finale yürü.",
+    "href": "./fut-draft/index.html"
   }
 ]

@@ -1,0 +1,430 @@
+{
+  "tactics": [
+    {
+      "style": "balanced",
+      "tempo": "low",
+      "lambdaHome": 2.03452851385447,
+      "lambdaAway": 0.871129896835743,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "balanced",
+      "tempo": "normal",
+      "lambdaHome": 2.260587237616078,
+      "lambdaAway": 0.871129896835743,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "balanced",
+      "tempo": "high",
+      "lambdaHome": 2.509251833753847,
+      "lambdaAway": 0.8997857883309875,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "press",
+      "tempo": "low",
+      "lambdaHome": 2.1885492326547125,
+      "lambdaAway": 0.9570975713214767,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "press",
+      "tempo": "normal",
+      "lambdaHome": 2.431721369616347,
+      "lambdaAway": 0.9570975713214767,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "press",
+      "tempo": "high",
+      "lambdaHome": 2.6992107202741447,
+      "lambdaAway": 0.9857534628167215,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "counter",
+      "tempo": "low",
+      "lambdaHome": 2.093070835980358,
+      "lambdaAway": 0.8233700776770021,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "counter",
+      "tempo": "normal",
+      "lambdaHome": 2.325634262200398,
+      "lambdaAway": 0.8233700776770021,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    },
+    {
+      "style": "counter",
+      "tempo": "high",
+      "lambdaHome": 2.5814540310424423,
+      "lambdaAway": 0.8520259691722466,
+      "homePower": 89.61515151515152,
+      "awayPower": 83.58484848484848,
+      "modelVersion": 4
+    }
+  ],
+  "description": "Game-design validation only, not real-world odds. Pair experiments are neutral. 200 full cups reuse one seeded 3-user draft, choosing highest OVR per pack and skipping steals; fixture/match seeds vary. Cup score counts include extra time. V4 human knockout plans use normal tempo/balanced; AI plans follow the same fixed ability-based rule as production. Both pair models use the same new participant pool.",
+  "comparisons": [
+    {
+      "version": 3,
+      "games": 20000,
+      "strongWinPercent": 62.36,
+      "drawPercent": 20.15,
+      "underdogWinPercent": 17.49,
+      "meanGoals": 3.3626,
+      "eightPlusGoalsPercent": 1.765
+    },
+    {
+      "version": 4,
+      "games": 20000,
+      "strongWinPercent": 69.9,
+      "drawPercent": 17.75,
+      "underdogWinPercent": 12.35,
+      "meanGoals": 3.1717,
+      "eightPlusGoalsPercent": 1.445
+    }
+  ],
+  "cups": {
+    "count": 200,
+    "matches": 37800,
+    "meanGoals": 3.0834391534391536,
+    "extraTimeMatches": 603,
+    "champions": {
+      "Paris SG": 54,
+      "Barcelona": 33,
+      "Arsenal": 27,
+      "Real Madrid": 24,
+      "Manchester City": 23,
+      "Bayern München": 13,
+      "Draft A": 11,
+      "Inter": 4,
+      "Atlético de Madrid": 4,
+      "Man United": 3,
+      "Draft B": 2,
+      "Liverpool": 2
+    },
+    "tacticalCounts": {
+      "normal": 39600,
+      "at-risk": 11597,
+      "chasing-24": 10120,
+      "protect-position": 7310,
+      "qualified": 5093,
+      "eliminated": 1221,
+      "must-win": 659
+    },
+    "gapBins": {
+      "5–8": {
+        "matches": 8286,
+        "strongWins": 6339,
+        "draws": 1237,
+        "weakWins": 710
+      },
+      "8+": {
+        "matches": 6782,
+        "strongWins": 6203,
+        "draws": 416,
+        "weakWins": 163
+      },
+      "0–2": {
+        "matches": 10233,
+        "strongWins": 4552,
+        "draws": 2520,
+        "weakWins": 3161
+      },
+      "2–5": {
+        "matches": 12499,
+        "strongWins": 7592,
+        "draws": 2646,
+        "weakWins": 2261
+      }
+    },
+    "mostCommonScores": [
+      [
+        "1-1",
+        3172
+      ],
+      [
+        "1-0",
+        2859
+      ],
+      [
+        "0-1",
+        2798
+      ],
+      [
+        "2-0",
+        2571
+      ],
+      [
+        "1-2",
+        2395
+      ],
+      [
+        "0-2",
+        2389
+      ],
+      [
+        "2-1",
+        2330
+      ],
+      [
+        "0-0",
+        1896
+      ],
+      [
+        "3-0",
+        1732
+      ],
+      [
+        "0-3",
+        1691
+      ],
+      [
+        "2-2",
+        1442
+      ],
+      [
+        "3-1",
+        1378
+      ],
+      [
+        "1-3",
+        1304
+      ],
+      [
+        "4-0",
+        1101
+      ],
+      [
+        "0-4",
+        1056
+      ]
+    ]
+  },
+  "teams": [
+    {
+      "name": "Paris SG",
+      "human": false,
+      "profile": {
+        "overall": 87.72727272727273,
+        "eliteCount": 10,
+        "eliteBonus": 1.5,
+        "deviation": 2.004127971368055,
+        "range": 7,
+        "clubChemistry": 1,
+        "nationChemistry": 0.2424242424242424,
+        "clubBonus": 0,
+        "nationBonus": 0.3878787878787879,
+        "balancePenalty": 0,
+        "clubEligible": false,
+        "rating": 89.61515151515152,
+        "lines": {
+          "GK": 83,
+          "DEF": 88.25,
+          "MID": 88,
+          "ATT": 88.33333333333333
+        },
+        "lineQuality": {
+          "GK": 83,
+          "DEF": 88.075,
+          "MID": 87.72,
+          "ATT": 88.00666666666666
+        },
+        "attributes": {
+          "finishing": 86.58333333333333,
+          "passing": 89.7,
+          "defending": 87.15,
+          "keeping": 82.14999999999999,
+          "attackingPace": 85.33333333333333,
+          "defensivePace": 87.75,
+          "stamina": 84.6,
+          "penalties": 81.8
+        },
+        "attributeCoverage": 1
+      }
+    },
+    {
+      "name": "Man United",
+      "human": false,
+      "profile": {
+        "overall": 83.0909090909091,
+        "eliteCount": 2,
+        "eliteBonus": 0.3,
+        "deviation": 2.2745447278539643,
+        "range": 9,
+        "clubChemistry": 1,
+        "nationChemistry": 0.1212121212121212,
+        "clubBonus": 0,
+        "nationBonus": 0.19393939393939394,
+        "balancePenalty": 0,
+        "clubEligible": false,
+        "rating": 83.58484848484848,
+        "lines": {
+          "GK": 82,
+          "DEF": 81.5,
+          "MID": 86,
+          "ATT": 82.66666666666667
+        },
+        "lineQuality": {
+          "GK": 82,
+          "DEF": 81.29,
+          "MID": 85.72,
+          "ATT": 82.57333333333334
+        },
+        "attributes": {
+          "finishing": 83.60000000000001,
+          "passing": 87.61666666666667,
+          "defending": 81.375,
+          "keeping": 82.3,
+          "attackingPace": 90,
+          "defensivePace": 59.5,
+          "stamina": 73.8,
+          "penalties": 82.2
+        },
+        "attributeCoverage": 1
+      }
+    },
+    {
+      "name": "Draft A",
+      "human": true,
+      "profile": {
+        "overall": 85.18181818181819,
+        "eliteCount": 5,
+        "eliteBonus": 0.75,
+        "deviation": 3.9730497060749377,
+        "range": 14,
+        "clubChemistry": 0.0606060606060606,
+        "nationChemistry": 0.2424242424242424,
+        "clubBonus": 0.2424242424242424,
+        "nationBonus": 0.606060606060606,
+        "balancePenalty": 0,
+        "clubEligible": true,
+        "rating": 86.78030303030305,
+        "lines": {
+          "GK": 87,
+          "DEF": 82.75,
+          "MID": 87.33333333333333,
+          "ATT": 85.66666666666667
+        },
+        "lineQuality": {
+          "GK": 87,
+          "DEF": 81.80499999999999,
+          "MID": 86.86666666666666,
+          "ATT": 85.29333333333334
+        },
+        "attributes": {
+          "finishing": 84.48333333333333,
+          "passing": 88.41666666666667,
+          "defending": 82.825,
+          "keeping": 86.10000000000001,
+          "attackingPace": 76,
+          "defensivePace": 80,
+          "stamina": 78.3,
+          "penalties": 82
+        },
+        "attributeCoverage": 1
+      }
+    },
+    {
+      "name": "Draft B",
+      "human": true,
+      "profile": {
+        "overall": 84,
+        "eliteCount": 3,
+        "eliteBonus": 0.44999999999999996,
+        "deviation": 2.796101181678127,
+        "range": 10,
+        "clubChemistry": 0.1212121212121212,
+        "nationChemistry": 0.1212121212121212,
+        "clubBonus": 0.4848484848484848,
+        "nationBonus": 0.303030303030303,
+        "balancePenalty": 0,
+        "clubEligible": true,
+        "rating": 85.23787878787878,
+        "lines": {
+          "GK": 89,
+          "DEF": 83.25,
+          "MID": 84.33333333333333,
+          "ATT": 83
+        },
+        "lineQuality": {
+          "GK": 89,
+          "DEF": 82.655,
+          "MID": 84.00666666666666,
+          "ATT": 82.86
+        },
+        "attributes": {
+          "finishing": 82.55,
+          "passing": 84.93333333333334,
+          "defending": 83.8,
+          "keeping": 87.75,
+          "attackingPace": 79.33333333333333,
+          "defensivePace": 76.5,
+          "stamina": 80.4,
+          "penalties": 75.6
+        },
+        "attributeCoverage": 1
+      }
+    },
+    {
+      "name": "Draft C",
+      "human": true,
+      "profile": {
+        "overall": 80.81818181818181,
+        "eliteCount": 2,
+        "eliteBonus": 0.3,
+        "deviation": 4.217241274452074,
+        "range": 14,
+        "clubChemistry": 0,
+        "nationChemistry": 0.0606060606060606,
+        "clubBonus": 0,
+        "nationBonus": 0.1515151515151515,
+        "balancePenalty": 0.034758603912331834,
+        "clubEligible": true,
+        "rating": 81.23493836578463,
+        "lines": {
+          "GK": 87,
+          "DEF": 78,
+          "MID": 82.33333333333333,
+          "ATT": 81
+        },
+        "lineQuality": {
+          "GK": 87,
+          "DEF": 77.58,
+          "MID": 81.72666666666666,
+          "ATT": 80.58
+        },
+        "attributes": {
+          "finishing": 81.41666666666667,
+          "passing": 84.36666666666667,
+          "defending": 76.125,
+          "keeping": 86.1,
+          "attackingPace": 76,
+          "defensivePace": 76.25,
+          "stamina": 76.5,
+          "penalties": 73.8
+        },
+        "attributeCoverage": 1
+      }
+    }
+  ]
+}
