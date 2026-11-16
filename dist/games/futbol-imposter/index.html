@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <meta name="theme-color" content="#0c1811">
+  <title>FUTBOL IMPOSTER · Pixel Scout</title>
+  <meta name="description" content="Telefonu elden ele gezdir, gizli futbolcuyu öğren ve aranızdaki Imposter'ı yakala!">
+  <link rel="icon" type="image/svg+xml" href="../../assets/ball.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="imposter-app">
+    <header class="top-nav">
+      <a href="../index.html" class="back-link" aria-label="Oyunlar menüsüne dön">
+        <span>← Oyunlar</span>
+      </a>
+    </header>
+
+    <!-- ==================== 1. KURULUM EKRANI ==================== -->
+    <section id="setupScreen" class="screen-card">
+      <div class="hero-block">
+        <h1 class="game-title">FUTBOL IMPOSTER</h1>
+        <p class="game-subtitle">Telefonu sırayla arkadaşlarına ver, gizli futbolcuyu öğren ve aranızdaki Imposter'ı bul.</p>
+      </div>
+
+      <div class="section-box">
+        <div class="section-head">
+          <span class="section-label">OYUNCULAR (<span id="playerCountLabel">4</span> KİŞİ)</span>
+          <span class="section-hint">En az 3 oyuncu</span>
+        </div>
+
+        <form id="addPlayerForm" class="add-player-row">
+          <input
+            id="newPlayerInput"
+            type="text"
+            class="player-input"
+            maxlength="18"
+            placeholder="Yeni oyuncu adı yazın..."
+            autocomplete="off"
+          >
+          <button type="submit" class="add-player-btn">+ Ekle</button>
+        </form>
+
+        <div id="playersChipsList" class="players-chips-list"></div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="section-box">
+          <span class="section-label">IMPOSTER SAYISI</span>
+          <div class="seg-group" role="radiogroup" aria-label="Imposter Sayısı">
+            <button type="button" class="seg-option active" data-imposters="1">1 Imposter</button>
+            <button type="button" class="seg-option" data-imposters="2">2 Imposter</button>
+          </div>
+        </div>
+
+        <div class="section-box">
+          <span class="section-label">IMPOSTER İPUCU</span>
+          <div class="seg-group" role="radiogroup" aria-label="Imposter İpucu">
+            <button type="button" class="seg-option active" data-hint="true">Açık</button>
+            <button type="button" class="seg-option" data-hint="false">Kapalı</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="setupErrorMsg" class="error-banner" hidden></p>
+
+      <button id="startGameBtn" type="button" class="primary-btn">
+        <span>OYUNU BAŞLAT</span>
+      </button>
+    </section>
+
+    <!-- ==================== 2. ROL DAĞITIM (ELDEN ELE) EKRANI ==================== -->
+    <section id="passScreen" class="screen-card" hidden>
+      <div class="pass-top">
+        <span id="passStepBadge" class="step-pill">OYUNCU 1 / 4</span>
+        <p class="pass-instruction">Telefonu şu oyuncuya ver:</p>
+        <h2 id="currentPassPlayerName" class="pass-player-name">Oyuncu 1</h2>
+      </div>
+
+      <div id="secretCardBox" class="secret-card locked" role="button" tabindex="0" aria-label="Rol kartını göster veya gizle">
+        <div id="cardClosedView" class="card-inner">
+          <div class="card-lock-icon">👁️</div>
+          <h3 class="card-tap-title">KARTINI GÖRMEK İÇİN DOKUN</h3>
+          <p class="card-tap-sub">Ekrana sadece senin baktığından emin ol.</p>
+        </div>
+
+        <div id="cardRevealedView" class="card-inner" hidden>
+          <span id="roleHeaderBadge" class="role-badge">GİZLİ İSİM</span>
+          <div id="secretWordDisplay" class="secret-word-big">Kylian Mbappé</div>
+          <div id="imposterHintBadge" class="imposter-hint-pill" hidden>💡 İpucu: Santrafor</div>
+          <p id="roleSubInstruction" class="role-sub-note">
+            Tek kelimelik bir ipucu hazırla.
+          </p>
+        </div>
+      </div>
+
+      <button id="nextPlayerPassBtn" type="button" class="primary-btn" disabled>
+        <span id="nextPlayerPassBtnText">ÖNCE KARTINA BAK 👁️</span>
+      </button>
+    </section>
+
+    <!-- ==================== 3. TARTIŞMA & TEK ADIMDA OYLAMA EKRANI ==================== -->
+    <section id="discussionScreen" class="screen-card" hidden>
+      <div class="discussion-hero">
+        <span class="step-pill">TARTIŞMA TURU</span>
+        <h2 id="starterAnnouncement" class="starter-heading">Oyuncu 1 turu başlatır</h2>
+        <p class="discussion-sub">
+          Sırayla tek kelimelik ipucunuzu söyleyin ve Imposter'ın kim olduğunu tartışın.
+        </p>
+      </div>
+
+      <div id="goToVoteActionWrap" class="vote-trigger-wrap">
+        <button id="showVoteButtonsBtn" type="button" class="vote-cta-btn">
+          <span>🗳️ Oylamaya Geç</span>
+        </button>
+      </div>
+
+      <div id="inlineVoteSection" class="inline-vote-section" hidden>
+        <div class="vote-prompt-header">
+          <span class="vote-prompt-title">Oylama sonucu seçilen oyuncuya tıklayın:</span>
+        </div>
+        <div id="votePlayersGrid" class="vote-players-grid"></div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. SONUÇ EKRANI ==================== -->
+    <section id="resultScreen" class="screen-card" hidden>
+      <div id="resultOutcomeBanner" class="result-banner">
+        <div id="resultEmoji" class="result-emoji">🎉</div>
+        <h2 id="resultTitle" class="result-title">MASUMLAR KAZANDI!</h2>
+        <p id="resultSubtitle" class="result-subtitle">Oylamada seçilen kişi gerçekten Imposter'dı!</p>
+      </div>
+
+      <div class="reveal-details-grid">
+        <div class="detail-card">
+          <span class="detail-kicker">GİZLİ İSİM</span>
+          <strong id="revealedSecretName" class="detail-big-val emerald">Kylian Mbappé</strong>
+        </div>
+
+        <div class="detail-card">
+          <span class="detail-kicker">GERÇEK IMPOSTER</span>
+          <strong id="revealedImposterNames" class="detail-big-val crimson">Oyuncu 2</strong>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button id="nextRoundSamePlayersBtn" type="button" class="primary-btn">
+          <span>🔄 YENİ TUR BAŞLAT</span>
+        </button>
+        <button id="backToSetupBtn" type="button" class="secondary-btn">
+          <span>AYARLARI DÜZENLE</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

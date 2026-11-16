@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Piyasa Değeri: Yüksek mi Düşük mü? · Pixel Scout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Konfeti Kutlama Canvası -->
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+  <!-- Oyun Başlığı ve Canlı Skor Göstergesi -->
+  <header class="game-header">
+    <div class="header-left">
+      <a href="../index.html" class="brand">
+        <span>PIXEL<span class="brand-dot">·</span>SCOUT</span>
+      </a>
+    </div>
+
+    <div class="score-hud">
+      <div class="hud-box">
+        <span class="hud-label">SKOR</span>
+        <strong id="current-score" class="hud-value">0</strong>
+      </div>
+      <div class="hud-box best">
+        <span class="hud-label">EN YÜKSEK</span>
+        <strong id="best-score" class="hud-value">0</strong>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button id="player-profile-btn" class="nav-btn player-nav-btn" type="button" title="İsmini Değiştir">
+        <span id="header-player-name">👤 Oyuncu</span>
+      </button>
+      <button id="scoreboard-btn" class="nav-btn scoreboard-nav-btn" type="button">
+        🏆 Skor Tablosu
+      </button>
+      <a href="../index.html" class="nav-btn">← Oyunlar</a>
+    </div>
+  </header>
+
+  <!-- Ana Karşılaştırma Alanı (Higher Lower Split Screen) -->
+  <main class="arena" id="arena">
+    <!-- Sol Panel: Değeri Açık Olan Kulüp -->
+    <section class="club-side left-side" id="left-side">
+      <div class="club-bg-watermark" id="left-watermark"></div>
+      <div class="club-bg-glow" id="left-bg-glow"></div>
+      <div class="club-content">
+        <div class="logo-wrapper">
+          <img id="left-logo" class="club-logo" alt="Kulüp Logosu" src="" />
+        </div>
+        <h2 id="left-name" class="club-name">Kulüp A</h2>
+        <span id="left-league" class="club-league">🇹🇷 Süper Lig</span>
+        
+        <p class="value-label">kadro piyasa değeri</p>
+        <div class="revealed-value-box">
+          <strong id="left-value" class="revealed-value">€0 Milyon</strong>
+          <span id="left-full-value" class="revealed-full-value">€0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orta Karşılaşma (VS) Rozeti -->
+    <div class="vs-circle" id="vs-circle">
+      <span>VS</span>
+    </div>
+
+    <!-- Sağ Panel: Tahmin Yapılacak Kulüp -->
+    <section class="club-side right-side" id="right-side">
+      <div class="club-bg-watermark" id="right-watermark"></div>
+      <div class="club-bg-glow" id="right-bg-glow"></div>
+      <div class="club-content">
+        <div class="logo-wrapper">
+          <img id="right-logo" class="club-logo" alt="Kulüp Logosu" src="" />
+        </div>
+        <h2 id="right-name" class="club-name">Kulüp B</h2>
+        <span id="right-league" class="club-league">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</span>
+        
+        <p class="value-label">bunun piyasa değeri</p>
+
+        <!-- Tahmin Butonları -->
+        <div class="action-buttons-box" id="action-buttons-box">
+          <button id="higher-btn" class="hl-btn higher-btn" type="button">
+            <span class="btn-arrow">▲</span>
+            <span class="btn-text">DAHA YÜKSEK</span>
+          </button>
+          <button id="lower-btn" class="hl-btn lower-btn" type="button">
+            <span class="btn-arrow">▼</span>
+            <span class="btn-text">DAHA DÜŞÜK</span>
+          </button>
+          <span class="btn-caption" id="comparison-caption">Kulüp A'dan daha mı değerli?</span>
+        </div>
+
+        <!-- Sayaçla Açılan Değer (Tahmin Edilince Görünür) -->
+        <div class="revealed-value-box" id="right-value-box" hidden>
+          <strong id="right-value" class="revealed-value count-up">€0 Milyon</strong>
+          <span id="right-full-value" class="revealed-full-value">€0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sonuç Geri Bildirim Rozeti (Doğru ✅ / Yanlış ❌) -->
+    <div class="feedback-badge" id="feedback-badge" hidden>
+      <span id="feedback-icon" class="feedback-icon">✓</span>
+    </div>
+  </main>
+
+  <!-- 1. Oyuna Başlama / İsim Sorma Modalı -->
+  <dialog class="start-dialog" id="start-dialog">
+    <div class="modal-card start-card">
+      <div class="modal-badge-icon">⚡</div>
+      <h2>PİYASA DEĞERİ</h2>
+      <p class="modal-subtitle">Hangi futbol kulübünün kadrosu daha değerli? Rekor kırabilecek misin?</p>
+
+      <form id="start-form" class="start-form" method="dialog">
+        <label for="player-name-input" class="start-label">OYUNCU ADINI GİR:</label>
+        <div class="input-row">
+          <input 
+            type="text" 
+            id="player-name-input" 
+            class="player-name-input" 
+            maxlength="16" 
+            placeholder="Adını yaz..." 
+            autocomplete="nickname" 
+            required 
+            autofocus 
+          />
+          <button type="submit" id="start-game-submit-btn" class="start-submit-btn">
+            BAŞLA ▶
+          </button>
+        </div>
+      </form>
+
+      <!-- Mevcut Skor Tablosu Özeti -->
+      <div class="start-scoreboard-preview">
+        <h4 class="scoreboard-preview-title">🏆 GÜNCEL İLK 5 LİDER</h4>
+        <ol class="scoreboard-list compact" id="start-scoreboard-list"></ol>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 2. Müstakil Skor Tablosu (Scoreboard) Modalı -->
+  <dialog class="scoreboard-dialog" id="scoreboard-dialog">
+    <div class="modal-card">
+      <div class="modal-badge-icon">🏆</div>
+      <h2>EN İYİ İLK 5</h2>
+      <p class="modal-subtitle">Piyasa Değeri Oyunu Liderlik Tablosu</p>
+
+      <div class="scoreboard-card-container">
+        <ol class="scoreboard-list" id="scoreboard-list-items"></ol>
+      </div>
+
+      <button id="close-scoreboard-btn" class="restart-btn secondary-btn" type="button">
+        KAPAT
+      </button>
+    </div>
+  </dialog>
+
+  <!-- 3. Oyun Bitti (Game Over) Modalı -->
+  <dialog class="game-over-dialog" id="game-over-dialog">
+    <div class="modal-card" id="modal-card-box">
+      <div class="modal-badge-icon" id="modal-badge-icon">❌</div>
+      <h2 id="modal-title">OYUN BİTTİ!</h2>
+      <p id="modal-subtitle" class="modal-subtitle"></p>
+
+      <p id="game-over-reason" class="modal-reason">
+        Kulüp B'nin piyasa değeri daha düşüktü.
+      </p>
+
+      <div class="modal-scores">
+        <div class="score-pill">
+          <span>YAPTIĞIN SKOR</span>
+          <strong id="final-score">0</strong>
+        </div>
+        <div class="score-pill highlight">
+          <span>EN YÜKSEK SKOR</span>
+          <strong id="modal-best-score">0</strong>
+        </div>
+      </div>
+
+      <!-- Oyun Sonu Scoreboard İlk 5 Gösterimi -->
+      <div class="modal-scoreboard-section">
+        <h4 class="scoreboard-preview-title">🏆 SCOREBOARD (EN İYİ İLK 5)</h4>
+        <ol class="scoreboard-list" id="modal-scoreboard-list"></ol>
+      </div>
+
+      <div class="modal-comparison" id="modal-comparison">
+        <!-- İki takımın gerçek değer farkı buraya yazılacak -->
+      </div>
+
+      <div class="modal-actions-row">
+        <button id="restart-btn" class="restart-btn" type="button">
+          🔄 YENİDEN OYNA
+        </button>
+        <button id="change-name-btn" class="secondary-modal-btn" type="button">
+          👤 İSİM DEĞİŞTİR
+        </button>
+      </div>
+
+      <div class="modal-footer-nav">
+        <a href="../index.html" class="modal-link">← Diğer Oyunlara Dön</a>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

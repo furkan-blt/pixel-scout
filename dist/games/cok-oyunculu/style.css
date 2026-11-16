@@ -1,0 +1,1564 @@
+/* ==========================================================================
+   Çok Oyunculu Piyasa Değeri Arenası — Tasarım Sistemi (Masaüstü & Mobil)
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@font-face {
+  font-family: Silkscreen;
+  src: url('../../assets/silkscreen.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  --bg-deep: #0c1811;
+  --bg-panel: #102017;
+  --bg-card: #14261c;
+  --bg-elevated: #1b3124;
+  --border-subtle: #2c4c38;
+  --border-bright: #467356;
+  --emerald: #c5e782;
+  --emerald-bright: #c5e782;
+  --emerald-dark: #9ec954;
+  --amber: #efc86b;
+  --sky: #88d4ab;
+  --purple: #efc86b;
+  --danger: #eb5757;
+  --text-main: #f2efe2;
+  --text-muted: #9eb5a3;
+  --text-dim: #799480;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Chakra Petch', system-ui, sans-serif;
+  --font-pixel: Silkscreen, monospace;
+}
+
+html, body {
+  min-height: 100%;
+  background-color: var(--bg-deep);
+  background-image: repeating-linear-gradient(
+    90deg,
+    #0c1811 0px,
+    #0c1811 64px,
+    #0f1e15 64px,
+    #0f1e15 128px
+  );
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input {
+  font-family: inherit;
+}
+
+/* ==================== 1. LOBİ EKRANI ==================== */
+.lobby-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+}
+
+.lobby-container {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.lobby-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.back-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: #14261c;
+  border: 1px solid var(--border-bright);
+  color: var(--emerald);
+  text-decoration: none;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.back-hub-btn:hover {
+  background: #1b3325;
+  border-color: var(--emerald);
+}
+
+.season-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--emerald-bright);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.pulse-dot, .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--emerald-bright);
+  box-shadow: 0 0 10px var(--emerald);
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.lobby-hero {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.hero-kicker {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--emerald-bright);
+  margin-bottom: 6px;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 3.5vw, 2.65rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.hero-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.nickname-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  padding: 14px 20px;
+  box-shadow: 0 4px 0 #060d09;
+}
+
+.nickname-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.nickname-input {
+  flex: 1;
+  max-width: 340px;
+  background: #0e1c14;
+  border: 1px solid var(--border-bright);
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.nickname-input:focus {
+  border-color: var(--emerald);
+}
+
+.lobby-error {
+  background: rgba(235, 87, 87, 0.15);
+  border: 1px solid var(--danger);
+  color: #fda4af;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.lobby-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 5px 0 #060d09;
+}
+
+.lobby-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.card-desc {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-label {
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 6px;
+  background: #0e1c14;
+  padding: 5px;
+  border: 1px solid var(--border-subtle);
+}
+
+.seg-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.seg-btn:hover {
+  color: #fff;
+}
+
+.seg-btn.active {
+  background: var(--emerald);
+  color: #0d1a12;
+  font-weight: 800;
+}
+
+.room-code-input {
+  width: 100%;
+  background: #0e1c14;
+  border: 2px solid var(--border-bright);
+  padding: 14px 16px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--emerald-bright);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.room-code-input:focus {
+  border-color: var(--emerald);
+}
+
+.lobby-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primary-cta-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: var(--emerald);
+  color: #0d1a12;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #060d09;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.primary-cta-btn:hover {
+  background: #d8f49d;
+  transform: translateY(-1px);
+}
+
+.secondary-cta-btn {
+  width: 100%;
+  padding: 12px 18px;
+  border: 1px solid var(--border-bright);
+  background: #1a3124;
+  color: var(--text-main);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.secondary-cta-btn:hover {
+  border-color: var(--emerald);
+  background: #223e2d;
+}
+
+.join-cta-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: var(--amber);
+  color: #0d1a12;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #060d09;
+  transition: transform 0.15s ease;
+}
+
+.join-cta-btn:hover {
+  transform: translateY(-1px);
+}
+
+.dataset-dist-box {
+  background: rgba(7, 11, 20, 0.55);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.dist-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.dist-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dist-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+/* Bekleme Odası */
+.waiting-room-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 22px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.waiting-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.waiting-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--emerald-bright);
+}
+
+.waiting-code-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.waiting-code-digits {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #fff;
+}
+
+.copy-code-btn, .add-bot-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-code-btn:hover, .add-bot-btn:hover {
+  border-color: var(--emerald);
+  color: var(--emerald-bright);
+}
+
+.settings-pill {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--emerald-bright);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.waiting-players-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.waiting-players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.waiting-player-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-subtle);
+}
+
+.waiting-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.waiting-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.leave-btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  background: rgba(244, 63, 94, 0.1);
+  color: #fda4af;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.start-match-btn {
+  max-width: 280px;
+}
+
+/* ==================== 2. OYUN EKRANI (MASAÜSTÜ SAĞDAN BOYDAN PUAN TABLOSU) ==================== */
+.arena-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sol ve Orta Kısım: Tahmin Ekranı */
+.arena-main {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.arena-topbar {
+  height: 68px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #102017;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.topbar-left, .topbar-center, .topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-back-btn {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-bright);
+  background: #14261c;
+  color: var(--emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.icon-back-btn:hover {
+  border-color: var(--emerald);
+}
+
+.room-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.arena-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.room-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background: #14261c;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.room-code-chip strong {
+  color: var(--emerald-bright);
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+
+.round-counter-pill {
+  padding: 6px 14px;
+  background: #14261c;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.round-counter-pill strong {
+  color: #fff;
+}
+
+.round-counter-pill.is-bonus {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+
+.bonus-exact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.32);
+}
+
+.bonus-exact-input {
+  width: 180px;
+  background: rgba(7, 11, 20, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: #fbbf24;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: right;
+  outline: none;
+}
+
+.bonus-exact-input:focus {
+  border-color: var(--emerald-bright);
+  color: #fff;
+}
+
+.round-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.round-dot {
+  width: 20px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(51, 65, 85, 0.8);
+  transition: all 0.25s ease;
+}
+
+.round-dot.done {
+  background: var(--emerald);
+}
+
+.round-dot.current {
+  width: 28px;
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.timer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.timer-chip.urgent {
+  background: rgba(244, 63, 94, 0.18);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fb7185;
+  animation: pulseGlow 0.8s infinite;
+}
+
+.timer-digits {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-bar-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(15, 23, 42, 0.95);
+  flex-shrink: 0;
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--emerald) 0%, var(--amber) 75%, var(--danger) 100%);
+  transition: width 0.25s linear;
+}
+
+/* Orta Sahne */
+.arena-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+}
+
+.stage-grid {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* FUTBOLCU KİMLİK KARTI */
+.player-identity-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  box-shadow: 0 5px 0 #060d09;
+}
+
+/* Sabit Oranlı, Kaymasız Futbolcu Fotoğraf Çerçevesi */
+.portrait-frame {
+  position: relative;
+  width: 184px;
+  height: 212px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #102017;
+  border: 2px solid var(--border-bright);
+  box-shadow: 0 4px 0 #060d09;
+}
+
+.player-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 8%;
+  display: block;
+  transform: translateZ(0);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.portrait-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--emerald-bright);
+  background: radial-gradient(circle at 50% 30%, #1e293b, #0f172a);
+}
+
+.age-floating-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 5px 11px;
+  border-radius: 9px;
+  background: rgba(7, 11, 20, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
+}
+
+.player-details-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.position-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.position-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border-radius: 9px;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: var(--emerald-bright);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pos-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald-bright);
+}
+
+.season-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+
+.player-name-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 2.8vw, 2.35rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.meta-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.meta-info-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background: #102017;
+  border: 1px solid var(--border-subtle);
+}
+
+.meta-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.club-crest-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.country-flag-img {
+  width: 28px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 3px;
+  display: block;
+}
+
+.country-emoji {
+  font-size: 1.35rem;
+}
+
+.meta-text-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.meta-kicker {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.meta-val {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* TAHMİN KONSOLU */
+.guess-console-card, .round-reveal-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 5px 0 #060d09;
+}
+
+.console-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.console-kicker {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--emerald-bright);
+}
+
+.console-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.guess-value-pill {
+  background: #0e1c14;
+  border: 2px solid var(--border-bright);
+  padding: 10px 22px;
+}
+
+.guess-big-number {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--emerald-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.value-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 12px;
+  background: #0e1c14;
+  border: 1px solid var(--border-subtle);
+  outline: none;
+  cursor: pointer;
+}
+
+.value-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  background: var(--emerald);
+  border: 3px solid #0d1a12;
+  cursor: grab;
+  transition: transform 0.12s ease;
+}
+
+.value-slider::-webkit-slider-thumb:active {
+  transform: scale(1.12);
+  cursor: grabbing;
+}
+
+.slider-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.quick-adjust-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.quick-step-btn {
+  padding: 10px 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-step-btn.minus {
+  background: #102017;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.quick-step-btn.minus:hover {
+  background: rgba(235, 87, 87, 0.15);
+  border-color: var(--danger);
+  color: #fda4af;
+}
+
+.quick-step-btn.plus {
+  background: #1a3124;
+  border: 1px solid var(--border-bright);
+  color: var(--emerald-bright);
+}
+
+.quick-step-btn.plus:hover {
+  border-color: var(--emerald);
+  background: #223e2d;
+}
+
+.lock-action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lock-guess-btn {
+  width: 100%;
+  padding: 14px 22px;
+  border: 1px solid var(--border-bright);
+  background: #1a3124;
+  color: var(--emerald);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #060d09;
+  transition: all 0.16s ease;
+}
+
+.lock-guess-btn:hover:not(:disabled) {
+  background: var(--emerald);
+  color: #0d1a12;
+}
+
+.lock-guess-btn:disabled {
+  background: #102017;
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+  box-shadow: none;
+  cursor: default;
+}
+
+.locked-status-note {
+  text-align: center;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--emerald-bright);
+}
+
+/* TUR SONUÇ (REVEAL) KARTI */
+.reveal-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  background: #102017;
+  border: 1px solid var(--border-bright);
+}
+
+.reveal-kicker {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.reveal-actual-price {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.reveal-earned-pts {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--emerald-bright);
+}
+
+.reveal-breakdown-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.breakdown-pill {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #102017;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+}
+
+.reveal-table-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.reveal-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.reveal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #102017;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.86rem;
+}
+
+/* ==================== SAĞ TARAF BOYDAN CANLI PUAN TABLOSU ==================== */
+.arena-sidebar {
+  width: 340px;
+  height: 100vh;
+  flex-shrink: 0;
+  background: #102017;
+  border-left: 2px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-count-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  background: #14261c;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.sidebar-players-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sb-player-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #14261c;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
+}
+
+.sb-player-card.is-me {
+  background: #1b3325;
+  border-color: var(--emerald);
+}
+
+.sb-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sb-rank {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 900;
+  background: #1e293b;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.sb-rank.rank-1 {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  color: #090d16;
+}
+
+.sb-rank.rank-2 {
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  color: #090d16;
+}
+
+.sb-rank.rank-3 {
+  background: linear-gradient(135deg, #fb923c, #b45309);
+  color: #090d16;
+}
+
+.sb-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sb-user-col {
+  min-width: 0;
+}
+
+.sb-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.sb-status.locked {
+  color: var(--emerald-bright);
+}
+
+.sb-status.thinking {
+  color: var(--amber);
+}
+
+.sb-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sb-total-pts {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-delta {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--emerald-bright);
+}
+
+.sidebar-scoring-footer {
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(7, 11, 20, 0.65);
+}
+
+.scoring-card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.scoring-card-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.scoring-rules-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.74rem;
+}
+
+.rule-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+}
+
+.emerald-txt { color: var(--emerald-bright); }
+.amber-txt { color: #fbbf24; }
+.sky-txt { color: #38bdf8; }
+.purple-txt { color: #c084fc; }
+
+/* ==================== 3. PODYUM EKRANI ==================== */
+.podium-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.podium-container {
+  width: 100%;
+  max-width: 820px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.podium-top-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: end;
+  margin-top: 8px;
+}
+
+.podium-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.podium-box.place-1 {
+  border-color: rgba(251, 191, 36, 0.5);
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.14), rgba(15, 23, 42, 0.9));
+  transform: translateY(-8px);
+}
+
+.podium-medal {
+  font-size: 2rem;
+}
+
+.podium-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.podium-score {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--emerald-bright);
+}
+
+.podium-standings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: left;
+}
+
+.standings-heading {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.podium-full-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.podium-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+/* ==================== MOBİL UYUMLULUK (< 1024px) ==================== */
+@media (max-width: 1023px) {
+  .arena-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .arena-main {
+    height: auto;
+    overflow: visible;
+  }
+
+  .arena-topbar {
+    padding: 10px 16px;
+    height: auto;
+    flex-wrap: wrap;
+  }
+
+  .round-dots {
+    display: none;
+  }
+
+  .arena-stage {
+    padding: 16px;
+  }
+
+  .player-identity-card {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .portrait-frame {
+    width: 118px;
+    height: 142px;
+    border-radius: 16px;
+  }
+
+  .player-name-heading {
+    font-size: 1.4rem;
+  }
+
+  .meta-badges-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .meta-info-box {
+    padding: 8px 12px;
+  }
+
+  .guess-console-card, .round-reveal-card {
+    padding: 18px;
+  }
+
+  .quick-adjust-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .arena-sidebar {
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+@media (max-width: 680px) {
+  .lobby-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nickname-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nickname-input {
+    max-width: 100%;
+  }
+
+  .podium-top-three {
+    grid-template-columns: 1fr;
+  }
+
+  .podium-box.place-1 {
+    transform: none;
+  }
+
+  .podium-actions {
+    grid-template-columns: 1fr;
+  }
+}
